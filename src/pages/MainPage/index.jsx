@@ -54,7 +54,10 @@ const MainPage = () => {
 
     if (contract) {
       console.log(contract);
-      const isApproved = await contract.checkApprovde(owner, contract.address);
+      const isApproved = await contract.isApprovedForAll(
+        owner,
+        contract.address
+      );
 
       if (!isApproved) {
         alert('Please get the authorize first');
