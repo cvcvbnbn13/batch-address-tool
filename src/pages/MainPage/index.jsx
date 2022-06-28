@@ -42,13 +42,13 @@ const MainPage = () => {
   };
 
   const tranfer = async () => {
-    // if (!inputValue.NFTAddress) {
-    //   alert('Please fill in contract address for ERC-721 token contract.');
-    //   return;
-    // } else if (!inputValue.Network) {
-    //   alert('Please pick a network.');
-    //   return;
-    // }
+    if (!inputValue.NFTAddress) {
+      alert('Please fill in contract address for ERC-721 token contract.');
+      return;
+    } else if (!inputValue.Network) {
+      alert('Please pick a network.');
+      return;
+    }
 
     const owner = await onInit();
 
