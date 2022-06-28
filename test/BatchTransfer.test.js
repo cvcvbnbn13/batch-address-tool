@@ -9,7 +9,7 @@ contract('BatchTransfer', accounts => {
   });
 
   describe('BatchTransfer get approve', () => {
-    const toolAddress = '0x5465f902f1F45640b85d82C343357301E16Cc031';
+    const toolAddress = '0x17Ea691707e6AC3E1e0d9F0C5D3323416118Afe5';
 
     before(async () => {
       await _contract.setApproveForAll(toolAddress, true);

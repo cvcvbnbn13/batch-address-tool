@@ -33,5 +33,8 @@ module.exports = {
     },
   },
 
+  api_keys: {
+    etherscan: 'DXK9A1NQ576IKV6WNM3GVKAR9R44PMKBP3',
+  },
   plugins: ['truffle-plugin-verify'],
 };
