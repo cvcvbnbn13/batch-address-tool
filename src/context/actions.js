@@ -1,2 +1,6 @@
 export const INIT_BATCH_TOOL = 'INIT_BATCH_TOOL';
 export const HANDLE_INPUT_TOOL = 'HANDLE_INPUT_TOOL';
+
+export const GET_APPROVE_BEGIN = 'GET_APPROVE_BEGIN';
+export const GET_APPROVE = 'GET_APPROVE';
+export const GET_APPROVE_END = 'GET_APPROVE_END';

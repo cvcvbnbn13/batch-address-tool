@@ -8,7 +8,12 @@ import {
 
 import reducer from './reducer';
 
-import { INIT_BATCH_TOOL, HANDLE_INPUT_TOOL } from './actions';
+import {
+  INIT_BATCH_TOOL,
+  HANDLE_INPUT_TOOL,
+  GET_APPROVE_BEGIN,
+  GET_APPROVE_END,
+} from './actions';
 
 import { ethers } from 'ethers';
 import { getBatchTransferContract } from '../utils/getBatchTransferContract';
@@ -28,7 +33,7 @@ const initialState = {
   ethereum: null,
   provider,
   contract: null,
-  isLoading: true,
+  isLoading: false,
   inputValue: {
     NFTAddress: '',
     Network: '',
@@ -64,8 +69,27 @@ const ToolProvider = ({ children }) => {
     });
   };
 
+  const approveContract = async () => {
+    if (!state.inputValue.NFTAddress) {
+      alert('Please fill in contract address for ERC-721 token contract.');
+      return;
+    } else if (!state.inputValue.Network) {
+      alert('Please pick a network.');
+      return;
+    }
+    dispatch({
+      type: GET_APPROVE_BEGIN,
+    });
+    if (state.contract) {
+      await state.contract.setApproveForAll(state.contract.address, true);
+    }
+    dispatch({
+      type: GET_APPROVE_END,
+    });
+  };
+
   return (
-    <ToolContext.Provider value={{ ...state, handleInput }}>
+    <ToolContext.Provider value={{ ...state, handleInput, approveContract }}>
       {children}
     </ToolContext.Provider>
   );

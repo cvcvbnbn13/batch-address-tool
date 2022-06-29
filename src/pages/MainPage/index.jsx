@@ -1,28 +1,22 @@
 import React, { useState } from 'react';
 import { useBatchTool } from '../../context/toolProvider';
+import { InputSection } from '../../components';
 import './index.css';
 
 const MainPage = () => {
-  const { handleInput, contract, inputValue, ethereum } = useBatchTool();
+  const { contract, inputValue, ethereum } = useBatchTool();
 
-  const networkOption = [
-    {
-      title: 'Pick a network',
-      value: '',
-    },
-    {
-      title: 'Ethereum Rinkeby test network',
-      value: 'rinkeby',
-    },
-  ];
-
-  async function onInit() {
-    const accounts = await ethereum.request({
-      method: 'eth_requestAccounts',
-    });
-    const account = accounts[0];
-    return account;
-  }
+  const getAccount = async () => {
+    try {
+      const accounts = await ethereum.request({
+        method: 'eth_requestAccounts',
+      });
+      const account = accounts[0];
+      return account;
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const approveContract = async () => {
     if (!inputValue.NFTAddress) {
@@ -32,12 +26,12 @@ const MainPage = () => {
       alert('Please pick a network.');
       return;
     }
-    if (contract) {
-      // if (isApproved) {
-      //   alert('You already get the authorize first');
-      //   return;
-      // }
-      contract.setApproveForAll(contract.address, true);
+    try {
+      if (contract) {
+        contract.setApproveForAll(contract.address, true);
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -50,73 +44,36 @@ const MainPage = () => {
       return;
     }
 
-    const owner = await onInit();
+    try {
+      const owner = await getAccount();
 
-    if (contract) {
-      console.log(contract);
-      const isApproved = await contract.isApprovedForAll(
-        owner,
-        contract.address
-      );
+      if (contract) {
+        console.log(contract);
+        const isApproved = await contract.isApprovedForAll(
+          owner,
+          contract.address
+        );
 
-      if (!isApproved) {
-        alert('Please get the authorize first');
-        return;
+        if (!isApproved) {
+          alert('Please get the authorize first');
+          return;
+        }
+
+        const tokenIDs = inputValue.TokenIDs.split('\n').map(item =>
+          parseInt(item)
+        );
+
+        contract.batchTransfer(owner, inputValue.Recipient, tokenIDs);
       }
-
-      const tokenIDs = inputValue.TokenIDs.split('\n').map(item =>
-        parseInt(item)
-      );
-
-      contract.batchTransfer(owner, inputValue.Recipient, tokenIDs);
+    } catch (error) {
+      console.error(error);
     }
   };
   return (
     <div className="mainPage">
       <h2>Batch Tranfer</h2>
 
-      <label htmlFor="NFTAddress">NFTContract Address</label>
-      <input
-        type="text"
-        id="NFTAddress"
-        name="NFTAddress"
-        onChange={handleInput}
-        value={inputValue.NFTAddress}
-      />
-      <label htmlFor="Network">Network</label>
-      <select
-        name="Network"
-        id="Network"
-        value={inputValue.Network}
-        onChange={handleInput}
-      >
-        {networkOption.map(item => {
-          return (
-            <option value={item.value} key={item.title}>
-              {item.title}
-            </option>
-          );
-        })}
-      </select>
-      <label htmlFor="Recipient">Recipient</label>
-      <input
-        type="text"
-        name="Recipient"
-        id="Recipient"
-        value={inputValue.Recipient}
-        onChange={handleInput}
-      />
-      <label htmlFor="TokenIDs">
-        Token IDs (one per line, in decimal numbers)
-      </label>
-      <textarea
-        name="TokenIDs"
-        id="TokenIDs"
-        value={inputValue.TokenIDs}
-        onChange={handleInput}
-        rows="5"
-        cols="30"
-      />
+      <InputSection />
 
       <button onClick={approveContract}>Approve Contract</button>
       <button onClick={tranfer}>Tranfer</button>

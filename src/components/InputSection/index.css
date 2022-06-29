@@ -1,0 +1,20 @@
+.input-section {
+  display: flex;
+  flex-direction: column;
+}
+
+input,
+select {
+  margin: 0.2rem 0 2rem;
+  width: 100%;
+}
+
+input,
+select {
+  display: block;
+  padding: 0.5rem 0.25rem;
+}
+
+input {
+  width: calc(100% - 12px);
+}

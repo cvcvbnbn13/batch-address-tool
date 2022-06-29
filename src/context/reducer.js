@@ -1,6 +1,11 @@
 import { initialState } from './toolProvider';
 
-import { INIT_BATCH_TOOL, HANDLE_INPUT_TOOL } from './actions';
+import {
+  INIT_BATCH_TOOL,
+  HANDLE_INPUT_TOOL,
+  GET_APPROVE_BEGIN,
+  GET_APPROVE_END,
+} from './actions';
 
 const reducer = (state, action) => {
   if (action.type === INIT_BATCH_TOOL) {
@@ -8,7 +13,6 @@ const reducer = (state, action) => {
       ...state,
       ethereum: window.ethereum,
       contract: action.payload.signedContract,
-      isLoading: false,
     };
   }
 
@@ -19,6 +23,19 @@ const reducer = (state, action) => {
         ...state.inputValue,
         [action.payload.name]: action.payload.value,
       },
+    };
+  }
+
+  if (action.type === GET_APPROVE_BEGIN) {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }
+  if (action.type === GET_APPROVE_END) {
+    return {
+      ...state,
+      isLoading: false,
     };
   }
 };
