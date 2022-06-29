@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useBatchTool } from '../../context/toolProvider';
 import { InputSection } from '../../components';
 import './index.css';
 
 const MainPage = () => {
-  const { contract, inputValue, ethereum } = useBatchTool();
+  const { BatchTransferContract, inputValue, ERC721Contract } = useBatchTool();
 
-  const getAccount = async () => {
-    try {
-      const accounts = await ethereum.request({
-        method: 'eth_requestAccounts',
-      });
-      const account = accounts[0];
-      return account;
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  // const getAccount = async () => {
+  //   try {
+  //     const accounts = await ethereum.request({
+  //       method: 'eth_requestAccounts',
+  //     });
+  //     const account = accounts[0];
+  //     return account;
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
 
   const approveContract = async () => {
     if (!inputValue.NFTAddress) {
@@ -26,9 +26,10 @@ const MainPage = () => {
       alert('Please pick a network.');
       return;
     }
+
     try {
-      if (contract) {
-        contract.setApproveForAll(contract.address, true);
+      if (ERC721Contract && BatchTransferContract) {
+        ERC721Contract.setApprovalForAll(BatchTransferContract.address, true);
       }
     } catch (error) {
       console.error(error);
@@ -45,25 +46,16 @@ const MainPage = () => {
     }
 
     try {
-      const owner = await getAccount();
-
-      if (contract) {
-        console.log(contract);
-        const isApproved = await contract.isApprovedForAll(
-          owner,
-          contract.address
-        );
-
-        if (!isApproved) {
-          alert('Please get the authorize first');
-          return;
-        }
-
+      if (BatchTransferContract) {
         const tokenIDs = inputValue.TokenIDs.split('\n').map(item =>
           parseInt(item)
         );
 
-        contract.batchTransfer(owner, inputValue.Recipient, tokenIDs);
+        BatchTransferContract.batchTransfer(
+          inputValue.NFTAddress,
+          inputValue.Recipient,
+          tokenIDs
+        );
       }
     } catch (error) {
       console.error(error);

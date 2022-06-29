@@ -15,17 +15,8 @@ const networkOption = [
 
 const InputSection = () => {
   const { inputValue, handleInput } = useBatchTool();
-  console.log(inputValue);
   return (
     <div className="input-section">
-      <label htmlFor="NFTAddress">NFTContract Address</label>
-      <input
-        type="text"
-        id="NFTAddress"
-        name="NFTAddress"
-        onChange={handleInput}
-        value={inputValue.NFTAddress}
-      />
       <label htmlFor="Network">Network</label>
       <select
         name="Network"
@@ -41,6 +32,14 @@ const InputSection = () => {
           );
         })}
       </select>
+      <label htmlFor="NFTAddress">NFTContract Address</label>
+      <input
+        type="text"
+        id="NFTAddress"
+        name="NFTAddress"
+        onChange={handleInput}
+        value={inputValue.NFTAddress}
+      />
       <label htmlFor="Recipient">Recipient</label>
       <input
         type="text"

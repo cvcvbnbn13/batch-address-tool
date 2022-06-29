@@ -16,13 +16,4 @@ contract BatchTransfer {
         tokenContract.transferFrom(msg.sender, recipient, tokenIds[index]);
     }
   }
-
-  function setApproveForAll(address operator, bool approve) external {
-    require(msg.sender != operator);
-    _operatorApproved[msg.sender][operator] = approve;
-  }
-
-  function isApprovedForAll(address owner, address operator) external view returns(bool) {
-    return _operatorApproved[owner][operator];
-  }
 }

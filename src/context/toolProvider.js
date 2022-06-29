@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useReducer,
-} from 'react';
+import { createContext, useContext, useEffect, useReducer } from 'react';
 
 import reducer from './reducer';
 
@@ -16,7 +10,7 @@ import {
 } from './actions';
 
 import { ethers } from 'ethers';
-import { getBatchTransferContract } from '../utils/getBatchTransferContract';
+import { getBatchTransferContract, getERC721Contract } from '../utils';
 
 const provider = ethers.getDefaultProvider('rinkeby', {
   infura: {
@@ -32,7 +26,8 @@ const signer = web3Provider.getSigner();
 const initialState = {
   ethereum: null,
   provider,
-  contract: null,
+  BatchTransferContract: null,
+  ERC721Contract: null,
   isLoading: false,
   inputValue: {
     NFTAddress: '',
@@ -51,16 +46,25 @@ const ToolProvider = ({ children }) => {
     async function initTool() {
       try {
         const contract = await getBatchTransferContract(provider);
-        const signedContract = contract.connect(signer);
+        const ERC721Contract = await getERC721Contract(
+          state.inputValue.NFTAddress,
+          provider
+        );
 
-        dispatch({ type: INIT_BATCH_TOOL, payload: { signedContract } });
+        const signedContract = contract.connect(signer);
+        const signedERC721Contract = ERC721Contract.connect(signer);
+
+        dispatch({
+          type: INIT_BATCH_TOOL,
+          payload: { signedContract, signedERC721Contract },
+        });
       } catch (error) {
         console.error(error);
       }
     }
 
     initTool();
-  }, []);
+  }, [state.inputValue.NFTAddress]);
 
   const handleInput = e => {
     dispatch({

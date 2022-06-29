@@ -12,7 +12,8 @@ const reducer = (state, action) => {
     return {
       ...state,
       ethereum: window.ethereum,
-      contract: action.payload.signedContract,
+      BatchTransferContract: action.payload.signedContract,
+      ERC721Contract: action.payload.signedERC721Contract,
     };
   }
 

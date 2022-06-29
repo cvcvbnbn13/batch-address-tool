@@ -1,3 +1,4 @@
 import { getBatchTransferContract } from './getBatchTransferContract';
+import { getERC721Contract } from './getERC721Contract';
 
-export { getBatchTransferContract };
+export { getBatchTransferContract, getERC721Contract };
