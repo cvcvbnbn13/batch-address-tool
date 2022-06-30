@@ -5,6 +5,8 @@ import {
   HANDLE_INPUT_TOOL,
   GET_APPROVE_BEGIN,
   GET_APPROVE_END,
+  TRANSFER_BEGIN,
+  TRANSFER_END,
 } from './actions';
 
 const reducer = (state, action) => {
@@ -34,6 +36,19 @@ const reducer = (state, action) => {
     };
   }
   if (action.type === GET_APPROVE_END) {
+    return {
+      ...state,
+      isLoading: false,
+    };
+  }
+
+  if (action.type === TRANSFER_BEGIN) {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }
+  if (action.type === TRANSFER_END) {
     return {
       ...state,
       isLoading: false,

@@ -2,13 +2,14 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
+
 import ToolProvider from './context/toolProvider';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <ToolProvider>
-    <React.StrictMode>
+  <React.StrictMode>
+    <ToolProvider>
       <App />
-    </React.StrictMode>
-  </ToolProvider>
+    </ToolProvider>
+  </React.StrictMode>
 );

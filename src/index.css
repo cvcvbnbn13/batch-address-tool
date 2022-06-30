@@ -9,9 +9,15 @@ body {
   height: 100vh;
   width: 100%;
   box-sizing: border-box;
+  position: relative;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+.Toastify__spinner {
+  border-color: var(--toastify-spinner-color-empty-area) !important;
+  border-right-color: var(--toastify-spinner-color) !important;
 }

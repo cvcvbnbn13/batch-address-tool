@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useReducer } from 'react';
-
+import { toast } from 'react-toastify';
 import reducer from './reducer';
 
 import {
@@ -7,6 +7,8 @@ import {
   HANDLE_INPUT_TOOL,
   GET_APPROVE_BEGIN,
   GET_APPROVE_END,
+  TRANSFER_BEGIN,
+  TRANSFER_END,
 } from './actions';
 
 import { ethers } from 'ethers';
@@ -81,19 +83,74 @@ const ToolProvider = ({ children }) => {
       alert('Please pick a network.');
       return;
     }
-    dispatch({
-      type: GET_APPROVE_BEGIN,
-    });
-    if (state.contract) {
-      await state.contract.setApproveForAll(state.contract.address, true);
+
+    try {
+      dispatch({
+        type: GET_APPROVE_BEGIN,
+      });
+      if (state.ERC721Contract && state.BatchTransferContract) {
+        const tx = await state.ERC721Contract.setApprovalForAll(
+          state.BatchTransferContract.address,
+          true
+        );
+
+        await toast.promise(tx.wait(), {
+          pending: 'Approving...',
+          success: 'Approve successfully',
+          error: 'Approve unsuccessfully',
+        });
+      }
+      dispatch({
+        type: GET_APPROVE_END,
+      });
+    } catch (error) {
+      console.error(error);
+      dispatch({
+        type: GET_APPROVE_END,
+      });
     }
-    dispatch({
-      type: GET_APPROVE_END,
-    });
+  };
+
+  const transfer = async () => {
+    if (!state.inputValue.NFTAddress) {
+      alert('Please fill in contract address for ERC-721 token contract.');
+      return;
+    } else if (!state.inputValue.Network) {
+      alert('Please pick a network.');
+      return;
+    }
+
+    try {
+      if (state.BatchTransferContract) {
+        dispatch({ type: TRANSFER_BEGIN });
+        const tokenIDs = state.inputValue.TokenIDs.split('\n').map(item =>
+          parseInt(item)
+        );
+
+        const tx = await state.BatchTransferContract.batchTransfer(
+          state.inputValue.NFTAddress,
+          state.inputValue.Recipient,
+          tokenIDs
+        );
+
+        await toast.promise(tx.wait(), {
+          pending: 'Transfering...',
+          success: 'Transfer successfully',
+          error: 'Transfer unsuccessfully',
+        });
+      }
+      dispatch({ type: TRANSFER_END });
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+      dispatch({ type: TRANSFER_END });
+    }
   };
 
   return (
-    <ToolContext.Provider value={{ ...state, handleInput, approveContract }}>
+    <ToolContext.Provider
+      value={{ ...state, handleInput, approveContract, transfer }}
+    >
       {children}
     </ToolContext.Provider>
   );
