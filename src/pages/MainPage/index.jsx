@@ -8,12 +8,12 @@ const MainPage = () => {
 
   return (
     <div className="mainPage">
-      <h2>Batch Tranfer</h2>
+      <h2>Batch Transfer</h2>
 
       <InputSection />
 
       <button onClick={approveContract}>Approve Contract</button>
-      <button onClick={transfer}>Tranfer</button>
+      <button onClick={transfer}>Transfer</button>
     </div>
   );
 };
