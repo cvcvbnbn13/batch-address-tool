@@ -108,12 +108,15 @@ const ToolProvider = ({ children }) => {
       }
     }
 
-    checkIsApproved();
+    if (state.ERC721Contract?.address === state.inputValue.NFTAddress) {
+      checkIsApproved();
+    }
   }, [
     state.ERC721Contract,
     state.owner,
     state.BatchTransferContract,
     state.inputValue.NFTAddress,
+    state.isApproved,
   ]);
 
   useEffect(() => {
