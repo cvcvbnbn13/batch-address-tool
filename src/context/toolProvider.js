@@ -9,6 +9,9 @@ import {
   GET_APPROVE_END,
   TRANSFER_BEGIN,
   TRANSFER_END,
+  CHECK_IS_APPROVED,
+  GET_OWNER,
+  INIT_IS_APPROVED,
 } from './actions';
 
 import { ethers } from 'ethers';
@@ -23,14 +26,14 @@ const provider = ethers.getDefaultProvider('rinkeby', {
 
 const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
 
-const signer = web3Provider.getSigner();
-
 const initialState = {
   ethereum: null,
   provider,
   BatchTransferContract: null,
   ERC721Contract: null,
   isLoading: false,
+  isApproved: null,
+  owner: '',
   inputValue: {
     NFTAddress: '',
     Network: '',
@@ -43,10 +46,12 @@ const ToolContext = createContext();
 
 const ToolProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
-
   useEffect(() => {
     async function initTool() {
       try {
+        await web3Provider.send('eth_requestAccounts', []);
+        const signer = web3Provider.getSigner();
+
         const contract = await getBatchTransferContract(provider);
         const ERC721Contract = await getERC721Contract(
           state.inputValue.NFTAddress,
@@ -64,9 +69,71 @@ const ToolProvider = ({ children }) => {
         console.error(error);
       }
     }
-
     initTool();
-  }, [state.inputValue.NFTAddress]);
+  }, [state.inputValue.NFTAddress, state.ethereum?.selectedAddress]);
+
+  // useEffect(() => {
+  //   if (!state.ethereum?.selectedAddress) return;
+  //   if (state.ethereum) {
+  //     async function getAccount() {
+  //       try {
+  //         const accounts = await state.ethereum?.request({
+  //           method: 'eth_requestAccounts',
+  //         });
+  //         const account = accounts[0];
+  //         dispatch({ type: GET_OWNER, payload: account });
+  //       } catch (error) {
+  //         console.error(error);
+  //       }
+  //     }
+  //     getAccount();
+  //   }
+  // }, [state.ethereum, state.ethereum?.selectedAddress]);
+
+  useEffect(() => {
+    async function checkIsApproved() {
+      try {
+        if (state.inputValue?.NFTAddress !== '') {
+          const isApproved = await state.ERC721Contract?.isApprovedForAll(
+            state.owner,
+            state.BatchTransferContract?.address
+          );
+          dispatch({ type: CHECK_IS_APPROVED, payload: isApproved });
+        }
+        if (!state.inputValue?.NFTAddress) {
+          dispatch({ type: INIT_IS_APPROVED });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    checkIsApproved();
+  }, [
+    state.ERC721Contract,
+    state.owner,
+    state.BatchTransferContract,
+    state.inputValue.NFTAddress,
+  ]);
+
+  useEffect(() => {
+    if (state.ethereum) {
+      state.ethereum?.on('accountsChanged', handleAccountsChanged);
+      return () => {
+        state.ethereum?.removeListener(
+          'accountsChanged',
+          handleAccountsChanged
+        );
+      };
+    }
+  });
+
+  const handleAccountsChanged = (...arg) => {
+    const accounts = arg[0];
+    if (accounts.length > 0) {
+      dispatch({ type: GET_OWNER, payload: { accounts } });
+    }
+  };
 
   const handleInput = e => {
     dispatch({
@@ -149,7 +216,12 @@ const ToolProvider = ({ children }) => {
 
   return (
     <ToolContext.Provider
-      value={{ ...state, handleInput, approveContract, transfer }}
+      value={{
+        ...state,
+        handleInput,
+        approveContract,
+        transfer,
+      }}
     >
       {children}
     </ToolContext.Provider>

@@ -7,6 +7,9 @@ import {
   GET_APPROVE_END,
   TRANSFER_BEGIN,
   TRANSFER_END,
+  CHECK_IS_APPROVED,
+  GET_OWNER,
+  INIT_IS_APPROVED,
 } from './actions';
 
 const reducer = (state, action) => {
@@ -14,6 +17,7 @@ const reducer = (state, action) => {
     return {
       ...state,
       ethereum: window.ethereum,
+      owner: window.ethereum?.selectedAddress,
       BatchTransferContract: action.payload.signedContract,
       ERC721Contract: action.payload.signedERC721Contract,
     };
@@ -52,6 +56,26 @@ const reducer = (state, action) => {
     return {
       ...state,
       isLoading: false,
+    };
+  }
+
+  if (action.type === GET_OWNER) {
+    return {
+      ...state,
+      owner: action.payload.accounts,
+    };
+  }
+  if (action.type === CHECK_IS_APPROVED) {
+    return {
+      ...state,
+      isApproved: action.payload,
+    };
+  }
+
+  if (action.type === INIT_IS_APPROVED) {
+    return {
+      ...state,
+      isApproved: false,
     };
   }
 };
