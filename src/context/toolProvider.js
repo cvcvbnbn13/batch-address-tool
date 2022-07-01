@@ -72,24 +72,6 @@ const ToolProvider = ({ children }) => {
     initTool();
   }, [state.inputValue.NFTAddress, state.ethereum?.selectedAddress]);
 
-  // useEffect(() => {
-  //   if (!state.ethereum?.selectedAddress) return;
-  //   if (state.ethereum) {
-  //     async function getAccount() {
-  //       try {
-  //         const accounts = await state.ethereum?.request({
-  //           method: 'eth_requestAccounts',
-  //         });
-  //         const account = accounts[0];
-  //         dispatch({ type: GET_OWNER, payload: account });
-  //       } catch (error) {
-  //         console.error(error);
-  //       }
-  //     }
-  //     getAccount();
-  //   }
-  // }, [state.ethereum, state.ethereum?.selectedAddress]);
-
   useEffect(() => {
     async function checkIsApproved() {
       try {
@@ -154,6 +136,10 @@ const ToolProvider = ({ children }) => {
       return;
     }
 
+    if (!state.ethereum || state.ethereum?.selectedAddress === null) {
+      alert('Please connect your wall first');
+    }
+
     try {
       dispatch({
         type: GET_APPROVE_BEGIN,
@@ -182,11 +168,23 @@ const ToolProvider = ({ children }) => {
   };
 
   const transfer = async () => {
+    if (!state.ethereum || state.ethereum?.selectedAddress === null) {
+      alert('Please connect your wall first');
+    }
+
     if (!state.inputValue.NFTAddress) {
       alert('Please fill in contract address for ERC-721 token contract.');
       return;
     } else if (!state.inputValue.Network) {
       alert('Please pick a network.');
+      return;
+    } else if (!state.inputValue.Recipient) {
+      alert('Please fill in recipient address');
+      return;
+    }
+
+    if (!state.isApproved) {
+      alert('Please approve your contract first');
       return;
     }
 

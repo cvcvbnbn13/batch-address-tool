@@ -22,10 +22,7 @@ const MainPage = () => {
         {owner ? (
           <button>
             <span>
-              {`${ethereum?.selectedAddress.slice(
-                0,
-                3
-              )}...${ethereum?.selectedAddress.slice(-3).toUpperCase()}`}
+              {`${owner.slice(0, 3)}...${owner.slice(-3).toUpperCase()}`}
             </span>
           </button>
         ) : (
@@ -46,7 +43,7 @@ const MainPage = () => {
           'Approve Contract'
         )}
       </button>
-      <button onClick={transfer} disabled={isLoading}>
+      <button onClick={transfer} disabled={isLoading || !isApproved}>
         {isLoading ? <Loading /> : 'Transfer'}
       </button>
     </div>
