@@ -10,8 +10,11 @@ import {
   TRANSFER_BEGIN,
   TRANSFER_END,
   CHECK_IS_APPROVED,
-  GET_OWNER,
+  GET_CURRENT_USER,
   INIT_IS_APPROVED,
+  LOG_OUT,
+  GET_CSV_TOKENIDS,
+  GET_NFT_ADDRESS_TOKENIDS,
 } from './actions';
 
 import { ethers } from 'ethers';
@@ -33,7 +36,9 @@ const initialState = {
   ERC721Contract: null,
   isLoading: false,
   isApproved: null,
-  owner: '',
+  currentUser: '',
+  csvTokenIDs: null,
+  NFTAddressTokenIDs: null,
   inputValue: {
     NFTAddress: '',
     Network: '',
@@ -46,6 +51,7 @@ const ToolContext = createContext();
 
 const ToolProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+
   useEffect(() => {
     async function initTool() {
       try {
@@ -77,7 +83,7 @@ const ToolProvider = ({ children }) => {
       try {
         if (state.inputValue?.NFTAddress !== '') {
           const isApproved = await state.ERC721Contract?.isApprovedForAll(
-            state.owner,
+            state.currentUser,
             state.BatchTransferContract?.address
           );
           dispatch({ type: CHECK_IS_APPROVED, payload: isApproved });
@@ -90,12 +96,15 @@ const ToolProvider = ({ children }) => {
       }
     }
 
-    if (state.ERC721Contract?.address === state.inputValue.NFTAddress) {
+    if (
+      state.inputValue.NFTAddress !== '' &&
+      state.ERC721Contract?.address === state.inputValue.NFTAddress
+    ) {
       checkIsApproved();
     }
   }, [
     state.ERC721Contract,
-    state.owner,
+    state.currentUser,
     state.BatchTransferContract,
     state.inputValue.NFTAddress,
     state.isApproved,
@@ -113,11 +122,64 @@ const ToolProvider = ({ children }) => {
     }
   });
 
+  useEffect(() => {
+    const getNFTAddressTokenIDs = async () => {
+      if (state.ERC721Contract) {
+        const hex = await state.ERC721Contract.totalSupply();
+        const totalSupply = parseInt(hex, 10);
+        const tokenIDs = [];
+
+        for (let i = 0; i < totalSupply; i++) {
+          const hex = await state.ERC721Contract.tokenOfOwnerByIndex(
+            state.currentUser,
+            i
+          );
+          const tokenID = parseInt(hex, 10);
+          tokenIDs.push(tokenID);
+        }
+
+        dispatch({ type: GET_NFT_ADDRESS_TOKENIDS, payload: { tokenIDs } });
+      }
+    };
+
+    if (
+      state.inputValue.NFTAddress !== '' &&
+      state.inputValue.NFTAddress === state.ERC721Contract?.address
+    ) {
+      getNFTAddressTokenIDs();
+    }
+  }, [
+    state.inputValue.NFTAddress,
+    state.ERC721Contract?.address,
+    state.currentUser,
+    state.ERC721Contract,
+  ]);
+
   const handleAccountsChanged = (...arg) => {
     const accounts = arg[0];
     if (accounts.length > 0) {
-      dispatch({ type: GET_OWNER, payload: { accounts } });
+      dispatch({ type: GET_CURRENT_USER, payload: { accounts } });
     }
+  };
+
+  const logout = async () => {
+    const accounts = await state.ethereum
+      .request({
+        method: 'wallet_requestPermissions',
+        params: [
+          {
+            eth_accounts: {},
+          },
+        ],
+      })
+      .then(() =>
+        state.ethereum.request({
+          method: 'eth_requestAccounts',
+        })
+      );
+
+    const account = accounts[0];
+    dispatch({ type: LOG_OUT, payload: account });
   };
 
   const handleInput = e => {
@@ -138,6 +200,7 @@ const ToolProvider = ({ children }) => {
 
     if (!state.ethereum || state.ethereum?.selectedAddress === null) {
       alert('Please connect your wall first');
+      return;
     }
 
     try {
@@ -170,6 +233,7 @@ const ToolProvider = ({ children }) => {
   const transfer = async () => {
     if (!state.ethereum || state.ethereum?.selectedAddress === null) {
       alert('Please connect your wall first');
+      return;
     }
 
     if (!state.inputValue.NFTAddress) {
@@ -215,6 +279,14 @@ const ToolProvider = ({ children }) => {
     }
   };
 
+  const getCSVTokenIDs = async csvTokenIDs => {
+    try {
+      await dispatch({ type: GET_CSV_TOKENIDS, payload: { csvTokenIDs } });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <ToolContext.Provider
       value={{
@@ -222,6 +294,8 @@ const ToolProvider = ({ children }) => {
         handleInput,
         approveContract,
         transfer,
+        logout,
+        getCSVTokenIDs,
       }}
     >
       {children}

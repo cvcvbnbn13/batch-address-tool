@@ -8,8 +8,11 @@ import {
   TRANSFER_BEGIN,
   TRANSFER_END,
   CHECK_IS_APPROVED,
-  GET_OWNER,
+  GET_CURRENT_USER,
   INIT_IS_APPROVED,
+  LOG_OUT,
+  GET_CSV_TOKENIDS,
+  GET_NFT_ADDRESS_TOKENIDS,
 } from './actions';
 
 const reducer = (state, action) => {
@@ -17,7 +20,7 @@ const reducer = (state, action) => {
     return {
       ...state,
       ethereum: window.ethereum,
-      owner: window.ethereum?.selectedAddress,
+      currentUser: window.ethereum?.selectedAddress,
       BatchTransferContract: action.payload.signedContract,
       ERC721Contract: action.payload.signedERC721Contract,
     };
@@ -59,10 +62,10 @@ const reducer = (state, action) => {
     };
   }
 
-  if (action.type === GET_OWNER) {
+  if (action.type === GET_CURRENT_USER) {
     return {
       ...state,
-      owner: action.payload.accounts,
+      currentUser: action.payload.accounts[0],
     };
   }
   if (action.type === CHECK_IS_APPROVED) {
@@ -76,6 +79,27 @@ const reducer = (state, action) => {
     return {
       ...state,
       isApproved: false,
+    };
+  }
+
+  if (action.type === LOG_OUT) {
+    return {
+      ...state,
+      currentUser: action.payload,
+    };
+  }
+
+  if (action.type === GET_CSV_TOKENIDS) {
+    return {
+      ...state,
+      csvTokenIDs: action.payload.csvTokenIDs,
+    };
+  }
+
+  if (action.type === GET_NFT_ADDRESS_TOKENIDS) {
+    return {
+      ...state,
+      NFTAddressTokenIDs: action.payload.tokenIDs,
     };
   }
 };

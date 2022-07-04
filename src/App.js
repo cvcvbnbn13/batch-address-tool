@@ -5,7 +5,6 @@ import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const { inputValue } = useBatchTool();
-
   if (
     inputValue.Recipient !== '' ||
     inputValue.NFTAddress !== '' ||

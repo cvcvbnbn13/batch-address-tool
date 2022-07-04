@@ -1,5 +1,6 @@
 import React from 'react';
 import { useBatchTool } from '../../context/toolProvider';
+import CSVReader from '../CSVReader';
 import './index.css';
 
 const networkOption = [
@@ -48,6 +49,9 @@ const InputSection = () => {
         value={inputValue.Recipient}
         onChange={handleInput}
       />
+
+      <CSVReader />
+
       <label htmlFor="TokenIDs">
         Token IDs (one per line, in decimal numbers)
       </label>

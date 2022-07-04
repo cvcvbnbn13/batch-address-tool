@@ -1,0 +1,31 @@
+.walletButton {
+  position: relative;
+}
+
+.walletButton button {
+  max-width: 100%;
+  padding: 1rem;
+  margin: 0;
+  color: #fff;
+  border: 1px solid transparent;
+  background-color: rgb(23, 213, 226);
+}
+
+.walletButton button:hover {
+  background-color: rgb(19, 168, 179);
+}
+
+.showToggle {
+  position: absolute;
+  z-index: 10;
+  margin-top: 0.2em;
+}
+
+.showToggle button {
+  background-color: #2ac4ae;
+  color: #fff;
+}
+
+.disableToggle {
+  display: none;
+}
