@@ -10,9 +10,13 @@ import {
   CHECK_IS_APPROVED,
   GET_CURRENT_USER,
   INIT_IS_APPROVED,
+  CONNECT,
   LOG_OUT,
   GET_CSV_TOKENIDS,
   GET_NFT_ADDRESS_TOKENIDS,
+  GET_NFT_LIST,
+  LIST_BULKS_TOKENIDS,
+  REMOVE_BULKS_TOKENIDS,
 } from './actions';
 
 const reducer = (state, action) => {
@@ -59,6 +63,9 @@ const reducer = (state, action) => {
     return {
       ...state,
       isLoading: false,
+      inputValue: {
+        ...initialState.inputValue,
+      },
     };
   }
 
@@ -66,6 +73,10 @@ const reducer = (state, action) => {
     return {
       ...state,
       currentUser: action.payload.accounts[0],
+      inputValue: {
+        ...state.inputValue,
+        TokenIDs: '',
+      },
     };
   }
   if (action.type === CHECK_IS_APPROVED) {
@@ -82,10 +93,17 @@ const reducer = (state, action) => {
     };
   }
 
+  if (action.type === CONNECT) {
+    return {
+      ...state,
+      isConnected: true,
+    };
+  }
+
   if (action.type === LOG_OUT) {
     return {
       ...state,
-      currentUser: action.payload,
+      isConnected: false,
     };
   }
 
@@ -99,7 +117,36 @@ const reducer = (state, action) => {
   if (action.type === GET_NFT_ADDRESS_TOKENIDS) {
     return {
       ...state,
-      NFTAddressTokenIDs: action.payload.tokenIDs,
+      NFTAddressTokenIDsOfOwner: action.payload.tokenIDs,
+    };
+  }
+
+  if (action.type === GET_NFT_LIST) {
+    return {
+      ...state,
+      NFTList: action.payload.NftList,
+    };
+  }
+
+  if (action.type === LIST_BULKS_TOKENIDS) {
+    return {
+      ...state,
+      inputValue: {
+        ...state.inputValue,
+        TokenIDs: [
+          ...state.inputValue.TokenIDs,
+          ...action.payload.tokenIDsArray,
+        ].join('\n'),
+      },
+    };
+  }
+  if (action.type === REMOVE_BULKS_TOKENIDS) {
+    return {
+      ...state,
+      inputValue: {
+        ...state.inputValue,
+        TokenIDs: [...action.payload.tokenIDsArray],
+      },
     };
   }
 };

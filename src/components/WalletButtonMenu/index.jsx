@@ -3,31 +3,17 @@ import './index.css';
 import { useBatchTool } from '../../context/toolProvider';
 
 const WalletButtonMenu = () => {
-  const { currentUser, ethereum, logout } = useBatchTool();
+  const { currentUser, logout, isConnected, connect } = useBatchTool();
   const [showToggle, setShowToggle] = useState(false);
-
-  const connect = async () => {
-    try {
-      ethereum?.request({ method: 'eth_requestAccounts' });
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const disconnect = async () => {
-    if (window.ethereum && window.ethereum.isMetaMask) {
-      window.ethereum.on('accountsChanged', function (accounts) {
-        return () =>
-          window.ethereum.removeListener('accountsChanged', accounts);
-      });
-    }
+  const handleShowToggle = () => {
+    setShowToggle(!showToggle);
   };
 
   return (
     <div className="walletButton">
-      {currentUser ? (
+      {currentUser && isConnected ? (
         <>
-          <button onClick={() => setShowToggle(!showToggle)}>
+          <button onClick={handleShowToggle}>
             <span>
               Connected{' '}
               {`${currentUser.slice(0, 3)}...${currentUser
@@ -40,7 +26,14 @@ const WalletButtonMenu = () => {
               showToggle || !currentUser ? 'showToggle' : 'disableToggle'
             }
           >
-            <button onClick={disconnect}>Disconnect</button>
+            <button
+              onClick={function (event) {
+                logout();
+                handleShowToggle();
+              }}
+            >
+              Disconnect
+            </button>
           </div>
         </>
       ) : (

@@ -15,6 +15,10 @@ import {
   LOG_OUT,
   GET_CSV_TOKENIDS,
   GET_NFT_ADDRESS_TOKENIDS,
+  GET_NFT_LIST,
+  LIST_BULKS_TOKENIDS,
+  REMOVE_BULKS_TOKENIDS,
+  CONNECT,
 } from './actions';
 
 import { ethers } from 'ethers';
@@ -38,7 +42,9 @@ const initialState = {
   isApproved: null,
   currentUser: '',
   csvTokenIDs: null,
-  NFTAddressTokenIDs: null,
+  NFTAddressTokenIDsOfOwner: [],
+  NFTList: [],
+  isConnected: true,
   inputValue: {
     NFTAddress: '',
     Network: '',
@@ -120,40 +126,7 @@ const ToolProvider = ({ children }) => {
         );
       };
     }
-  });
-
-  useEffect(() => {
-    const getNFTAddressTokenIDs = async () => {
-      if (state.ERC721Contract) {
-        const hex = await state.ERC721Contract.totalSupply();
-        const totalSupply = parseInt(hex, 10);
-        const tokenIDs = [];
-
-        for (let i = 0; i < totalSupply; i++) {
-          const hex = await state.ERC721Contract.tokenOfOwnerByIndex(
-            state.currentUser,
-            i
-          );
-          const tokenID = parseInt(hex, 10);
-          tokenIDs.push(tokenID);
-        }
-
-        dispatch({ type: GET_NFT_ADDRESS_TOKENIDS, payload: { tokenIDs } });
-      }
-    };
-
-    if (
-      state.inputValue.NFTAddress !== '' &&
-      state.inputValue.NFTAddress === state.ERC721Contract?.address
-    ) {
-      getNFTAddressTokenIDs();
-    }
-  }, [
-    state.inputValue.NFTAddress,
-    state.ERC721Contract?.address,
-    state.currentUser,
-    state.ERC721Contract,
-  ]);
+  }, [state.ethereum]);
 
   const handleAccountsChanged = (...arg) => {
     const accounts = arg[0];
@@ -162,24 +135,102 @@ const ToolProvider = ({ children }) => {
     }
   };
 
-  const logout = async () => {
-    const accounts = await state.ethereum
-      .request({
-        method: 'wallet_requestPermissions',
-        params: [
-          {
-            eth_accounts: {},
-          },
-        ],
-      })
-      .then(() =>
-        state.ethereum.request({
-          method: 'eth_requestAccounts',
-        })
-      );
+  useEffect(() => {
+    const getNFTAddressTokenIDsOfOwner = async () => {
+      try {
+        if (state.ERC721Contract) {
+          const hex = await state.ERC721Contract.balanceOf(state.currentUser);
+          const balanceOf = parseInt(hex, 10);
 
-    const account = accounts[0];
-    dispatch({ type: LOG_OUT, payload: account });
+          const tokenIDs = [];
+          for (let i = 0; i < balanceOf; i++) {
+            const hex = await state.ERC721Contract.tokenOfOwnerByIndex(
+              state.currentUser,
+              i
+            );
+
+            const tokenID = parseInt(hex, 10);
+            tokenIDs.push(tokenID);
+          }
+
+          dispatch({
+            type: GET_NFT_ADDRESS_TOKENIDS,
+            payload: { tokenIDs: tokenIDs },
+          });
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    if (
+      state.inputValue.NFTAddress !== '' &&
+      state.inputValue.NFTAddress === state.ERC721Contract?.address
+    ) {
+      getNFTAddressTokenIDsOfOwner();
+    }
+  }, [
+    state.inputValue.NFTAddress,
+    state.ERC721Contract?.address,
+    state.currentUser,
+    state.ERC721Contract,
+  ]);
+
+  useEffect(() => {
+    const getNFTList = async () => {
+      try {
+        const NftList = [];
+        for (let i = 0; i < state.NFTAddressTokenIDsOfOwner.length; i++) {
+          const tokenURI = await state.ERC721Contract?.tokenURI(
+            state.NFTAddressTokenIDsOfOwner[i]
+          );
+          const tokenURIFormat = tokenURI.replace('ipfs://', 'ipfs/');
+
+          const res = await fetch(`https://ipfs.io/${tokenURIFormat}`);
+
+          const { image, name } = await res.json();
+          const imageFormat = image.replace('ipfs://', 'ipfs/');
+
+          NftList.push({
+            tokenID: state.NFTAddressTokenIDsOfOwner[i],
+            name,
+            image: `https://gateway.thirdweb.dev/${imageFormat}`,
+          });
+        }
+
+        dispatch({ type: GET_NFT_LIST, payload: { NftList } });
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    if (
+      state.inputValue.NFTAddress !== '' &&
+      state.inputValue.NFTAddress === state.ERC721Contract?.address
+    ) {
+      getNFTList();
+    }
+
+    return () => {
+      getNFTList();
+    };
+  }, [
+    state.ERC721Contract,
+    state.NFTAddressTokenIDsOfOwner,
+    state.inputValue.NFTAddress,
+  ]);
+
+  const connect = async () => {
+    try {
+      await state.ethereum?.request({ method: 'eth_requestAccounts' });
+      dispatch({ type: CONNECT });
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const logout = async () => {
+    dispatch({ type: LOG_OUT });
   };
 
   const handleInput = e => {
@@ -198,7 +249,11 @@ const ToolProvider = ({ children }) => {
       return;
     }
 
-    if (!state.ethereum || state.ethereum?.selectedAddress === null) {
+    if (
+      !state.ethereum ||
+      state.ethereum?.selectedAddress === null ||
+      !state.isConnected
+    ) {
       alert('Please connect your wall first');
       return;
     }
@@ -231,7 +286,11 @@ const ToolProvider = ({ children }) => {
   };
 
   const transfer = async () => {
-    if (!state.ethereum || state.ethereum?.selectedAddress === null) {
+    if (
+      !state.ethereum ||
+      state.ethereum?.selectedAddress === null ||
+      !state.isConnected
+    ) {
       alert('Please connect your wall first');
       return;
     }
@@ -275,7 +334,6 @@ const ToolProvider = ({ children }) => {
       window.location.reload();
     } catch (error) {
       console.error(error);
-      dispatch({ type: TRANSFER_END });
     }
   };
 
@@ -284,6 +342,26 @@ const ToolProvider = ({ children }) => {
       await dispatch({ type: GET_CSV_TOKENIDS, payload: { csvTokenIDs } });
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handleBulksChange = e => {
+    let tokenIDsArray = [];
+
+    if (e.target.checked === true) {
+      tokenIDsArray.push(e.target.value);
+      dispatch({
+        type: LIST_BULKS_TOKENIDS,
+        payload: {
+          tokenIDsArray: tokenIDsArray,
+        },
+      });
+    } else if (e.target.checked === false) {
+      let regStr = new RegExp(`${e.target.value}\n*|\n*${e.target.value}`, 'g');
+      const tokenIDsArray = Array.from(state.inputValue.TokenIDs)
+        .join('')
+        .replace(regStr, '');
+      dispatch({ type: REMOVE_BULKS_TOKENIDS, payload: { tokenIDsArray } });
     }
   };
 
@@ -296,6 +374,8 @@ const ToolProvider = ({ children }) => {
         transfer,
         logout,
         getCSVTokenIDs,
+        handleBulksChange,
+        connect,
       }}
     >
       {children}

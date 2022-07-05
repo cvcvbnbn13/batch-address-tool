@@ -1,6 +1,7 @@
 import React from 'react';
 import { useBatchTool } from '../../context/toolProvider';
 import CSVReader from '../CSVReader';
+import NFTListSection from '../NFTListSection';
 import './index.css';
 
 const networkOption = [
@@ -49,8 +50,9 @@ const InputSection = () => {
         value={inputValue.Recipient}
         onChange={handleInput}
       />
-
       <CSVReader />
+
+      <NFTListSection />
 
       <label htmlFor="TokenIDs">
         Token IDs (one per line, in decimal numbers)

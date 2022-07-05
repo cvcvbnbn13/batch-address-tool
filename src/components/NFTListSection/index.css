@@ -1,0 +1,30 @@
+.nftList-section {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.nft-img {
+  width: 100%;
+}
+
+img {
+  width: 10%;
+  margin-right: 1rem;
+}
+
+.checkbox {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+}
+
+input[type='checkbox']:checked + img {
+  border: 2px solid rgb(23, 213, 226);
+}
+
+input[type='checkbox']:checked:hover + img {
+  border: 2px solid rgb(19, 168, 179);
+}
