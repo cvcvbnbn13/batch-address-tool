@@ -7,6 +7,8 @@ import {
   formatFileSize,
 } from 'react-papaparse';
 
+import './index.css';
+
 const GREY = '#CCC';
 const DEFAULT_REMOVE_HOVER_COLOR = '#A01919';
 const REMOVE_HOVER_COLOR_LIGHT = lightenDarkenColor(
@@ -73,7 +75,7 @@ const styles = {
     height: 23,
     position: 'absolute',
     right: 6,
-    top: 6,
+    top: 10,
     width: 23,
   },
 };
@@ -85,7 +87,7 @@ export default function CSVReader() {
     DEFAULT_REMOVE_HOVER_COLOR
   );
 
-  const { getCSVTokenIDs } = useBatchTool();
+  const { getCSVTokenIDs, removeCSVTokenIDs } = useBatchTool();
 
   return (
     <CSVReader
@@ -139,7 +141,14 @@ export default function CSVReader() {
                       setRemoveHoverColor(DEFAULT_REMOVE_HOVER_COLOR);
                     }}
                   >
-                    <Remove color={removeHoverColor} />
+                    <label htmlFor="removeButton" onClick={removeCSVTokenIDs}>
+                      <Remove color={removeHoverColor} />
+                      <input
+                        type="button"
+                        id="removeButton"
+                        className="removeButton"
+                      />
+                    </label>
                   </div>
                   <div style={styles.progressBar}>
                     <ProgressBar />

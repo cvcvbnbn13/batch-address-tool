@@ -3,8 +3,12 @@ import { useBatchTool } from '../../context/toolProvider';
 import './index.css';
 
 const NFTListSection = () => {
-  const { NFTList, handleBulksChange, NFTAddressTokenIDsOfOwner } =
-    useBatchTool();
+  const {
+    NFTList,
+    handleBulksChange,
+    NFTAddressTokenIDsOfOwner,
+    multipleTransferationList,
+  } = useBatchTool();
 
   return (
     <section
@@ -14,7 +18,9 @@ const NFTListSection = () => {
           : ''
       }
     >
-      {NFTAddressTokenIDsOfOwner.length > 0 && NFTList.length > 0 ? (
+      {multipleTransferationList.length === 0 &&
+      NFTAddressTokenIDsOfOwner.length > 0 &&
+      NFTList.length > 0 ? (
         <div className="nft-img">
           <p>Select NFT to transfer</p>
           {NFTList.map(item => {

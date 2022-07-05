@@ -43,12 +43,13 @@ const InputSection = () => {
         value={inputValue.NFTAddress}
       />
       <label htmlFor="Recipient">Recipient</label>
-      <input
-        type="text"
+      <textarea
         name="Recipient"
         id="Recipient"
         value={inputValue.Recipient}
         onChange={handleInput}
+        rows="5"
+        cols="30"
       />
       <CSVReader />
 

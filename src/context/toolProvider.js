@@ -14,11 +14,13 @@ import {
   INIT_IS_APPROVED,
   LOG_OUT,
   GET_CSV_TOKENIDS,
+  REMOVE_CSV_TOKENIDS,
   GET_NFT_ADDRESS_TOKENIDS,
   GET_NFT_LIST,
   LIST_BULKS_TOKENIDS,
   REMOVE_BULKS_TOKENIDS,
   CONNECT,
+  DECONSTRUCT_CSV,
 } from './actions';
 
 import { ethers } from 'ethers';
@@ -45,6 +47,7 @@ const initialState = {
   NFTAddressTokenIDsOfOwner: [],
   NFTList: [],
   isConnected: true,
+  multipleTransferationList: [],
   inputValue: {
     NFTAddress: '',
     Network: '',
@@ -220,6 +223,33 @@ const ToolProvider = ({ children }) => {
     state.inputValue.NFTAddress,
   ]);
 
+  useEffect(() => {
+    const deconstructCsv = async () => {
+      const multipleTransferationList = [];
+
+      try {
+        if (state.csvTokenIDs !== null) {
+          for (let i = 1; i < state.csvTokenIDs.length; i++) {
+            if (!state.csvTokenIDs[i][0] || !state.csvTokenIDs[i][1]) continue;
+            multipleTransferationList[i - 1] = {
+              Recipient: state.csvTokenIDs[i][0],
+              TokenIDs: [state.csvTokenIDs[i][1]],
+            };
+          }
+
+          dispatch({
+            type: DECONSTRUCT_CSV,
+            payload: { multipleTransferationList },
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    deconstructCsv();
+  }, [state.csvTokenIDs]);
+
   const connect = async () => {
     try {
       await state.ethereum?.request({ method: 'eth_requestAccounts' });
@@ -285,6 +315,8 @@ const ToolProvider = ({ children }) => {
     }
   };
 
+  console.log(state.multipleTransferationList);
+
   const transfer = async () => {
     if (
       !state.ethereum ||
@@ -314,24 +346,44 @@ const ToolProvider = ({ children }) => {
     try {
       if (state.BatchTransferContract) {
         dispatch({ type: TRANSFER_BEGIN });
-        const tokenIDs = state.inputValue.TokenIDs.split('\n').map(item =>
-          parseInt(item)
-        );
 
-        const tx = await state.BatchTransferContract.batchTransfer(
-          state.inputValue.NFTAddress,
-          state.inputValue.Recipient,
-          tokenIDs
-        );
+        if (state.multipleTransferationList.length > 0) {
+          for (let i = 0; i < state.multipleTransferationList.length; i++) {
+            const tokenIDs = state.multipleTransferationList[i].TokenIDs.map(
+              item => parseInt(item)
+            );
 
-        await toast.promise(tx.wait(), {
-          pending: 'Transfering...',
-          success: 'Transfer successfully',
-          error: 'Transfer unsuccessfully',
-        });
+            const tx = await state.BatchTransferContract.batchTransfer(
+              state.inputValue.NFTAddress,
+              state.multipleTransferationList[i].Recipient,
+              tokenIDs
+            );
+
+            await toast.promise(tx.wait(), {
+              pending: 'Transfering...',
+              success: 'Transfer successfully',
+              error: 'Transfer unsuccessfully',
+            });
+          }
+        } else {
+          const tokenIDs = state.inputValue.TokenIDs.split('\n').map(item =>
+            parseInt(item)
+          );
+
+          const tx = await state.BatchTransferContract.batchTransfer(
+            state.inputValue.NFTAddress,
+            state.inputValue.Recipient,
+            tokenIDs
+          );
+
+          await toast.promise(tx.wait(), {
+            pending: 'Transfering...',
+            success: 'Transfer successfully',
+            error: 'Transfer unsuccessfully',
+          });
+        }
       }
       dispatch({ type: TRANSFER_END });
-      window.location.reload();
     } catch (error) {
       console.error(error);
     }
@@ -340,6 +392,14 @@ const ToolProvider = ({ children }) => {
   const getCSVTokenIDs = async csvTokenIDs => {
     try {
       await dispatch({ type: GET_CSV_TOKENIDS, payload: { csvTokenIDs } });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const removeCSVTokenIDs = async e => {
+    try {
+      await dispatch({ type: REMOVE_CSV_TOKENIDS });
     } catch (error) {
       console.error(error);
     }
@@ -376,6 +436,7 @@ const ToolProvider = ({ children }) => {
         getCSVTokenIDs,
         handleBulksChange,
         connect,
+        removeCSVTokenIDs,
       }}
     >
       {children}

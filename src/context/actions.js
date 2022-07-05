@@ -19,6 +19,10 @@ export const CONNECT = 'CONNECT';
 export const LOG_OUT = 'LOG_OUT';
 
 export const GET_CSV_TOKENIDS = 'GET_CSV_TOKENIDS';
+export const REMOVE_CSV_TOKENIDS = 'REMOVE_CSV_TOKENIDS';
+
 export const GET_NFT_ADDRESS_TOKENIDS = 'GET_NFT_ADDRESS_TOKENIDS';
 
 export const GET_NFT_LIST = 'GET_NFT_LIST';
+
+export const DECONSTRUCT_CSV = 'DECONSTRUCT_CSV';

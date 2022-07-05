@@ -13,10 +13,12 @@ import {
   CONNECT,
   LOG_OUT,
   GET_CSV_TOKENIDS,
+  REMOVE_CSV_TOKENIDS,
   GET_NFT_ADDRESS_TOKENIDS,
   GET_NFT_LIST,
   LIST_BULKS_TOKENIDS,
   REMOVE_BULKS_TOKENIDS,
+  DECONSTRUCT_CSV,
 } from './actions';
 
 const reducer = (state, action) => {
@@ -62,10 +64,10 @@ const reducer = (state, action) => {
   if (action.type === TRANSFER_END) {
     return {
       ...state,
-      isLoading: false,
-      inputValue: {
-        ...initialState.inputValue,
-      },
+      ethereum: window.ethereum,
+      currentUser: window.ethereum?.selectedAddress,
+      BatchTransferContract: action.payload.signedContract,
+      ERC721Contract: action.payload.signedERC721Contract,
     };
   }
 
@@ -114,6 +116,19 @@ const reducer = (state, action) => {
     };
   }
 
+  if (action.type === REMOVE_CSV_TOKENIDS) {
+    return {
+      ...state,
+      csvTokenIDs: null,
+      multipleTransferationList: [],
+      inputValue: {
+        ...state.inputValue,
+        Recipient: '',
+        TokenIDs: '',
+      },
+    };
+  }
+
   if (action.type === GET_NFT_ADDRESS_TOKENIDS) {
     return {
       ...state,
@@ -140,12 +155,35 @@ const reducer = (state, action) => {
       },
     };
   }
+
   if (action.type === REMOVE_BULKS_TOKENIDS) {
     return {
       ...state,
       inputValue: {
         ...state.inputValue,
         TokenIDs: [...action.payload.tokenIDsArray],
+      },
+    };
+  }
+
+  if (action.type === DECONSTRUCT_CSV) {
+    const recipientsArray = [];
+    const tokenIDsArray = [];
+    for (let i = 0; i < action.payload.multipleTransferationList.length; i++) {
+      recipientsArray.push(
+        action.payload.multipleTransferationList[i].Recipient
+      );
+      tokenIDsArray.push(
+        ...action.payload.multipleTransferationList[i].TokenIDs
+      );
+    }
+    return {
+      ...state,
+      multipleTransferationList: action.payload.multipleTransferationList,
+      inputValue: {
+        ...state.inputValue,
+        Recipient: [...recipientsArray].join('\n'),
+        TokenIDs: [...tokenIDsArray].join('\n'),
       },
     };
   }
