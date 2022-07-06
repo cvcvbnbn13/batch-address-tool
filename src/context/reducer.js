@@ -14,10 +14,12 @@ import {
   GET_CSV_TOKENIDS,
   REMOVE_CSV_TOKENIDS,
   GET_NFT_ADDRESS_TOKENIDS,
-  GET_NFT_LIST,
+  GET_NFT_LIST_BEGIN,
+  GET_NFT_LIST_END,
   LIST_BULKS_TOKENIDS,
   REMOVE_BULKS_TOKENIDS,
   DECONSTRUCT_CSV,
+  DENY_TRANSFER,
 } from './actions';
 
 const reducer = (state, action) => {
@@ -58,18 +60,22 @@ const reducer = (state, action) => {
     return {
       ...state,
       isLoading: true,
+      isTransfering: true,
     };
   }
   if (action.type === TRANSFER_END) {
     return {
-      ...state,
-      ethereum: window.ethereum,
-      currentUser: window.ethereum?.selectedAddress,
-      BatchTransferContract: action.payload.signedContract,
-      ERC721Contract: action.payload.signedERC721Contract,
+      ...initialState,
+      isLoading: false,
+      isTransfering: false,
     };
   }
-
+  if (action.type === DENY_TRANSFER) {
+    return {
+      ...state,
+      isLoading: false,
+    };
+  }
   if (action.type === GET_CURRENT_USER) {
     return {
       ...state,
@@ -91,6 +97,7 @@ const reducer = (state, action) => {
     return {
       ...state,
       isConnected: true,
+      ethereum: window.ethereum,
     };
   }
 
@@ -98,6 +105,9 @@ const reducer = (state, action) => {
     return {
       ...state,
       isConnected: false,
+      ethereum: null,
+      NFTList: [],
+      isApproved: false,
     };
   }
 
@@ -128,10 +138,18 @@ const reducer = (state, action) => {
     };
   }
 
-  if (action.type === GET_NFT_LIST) {
+  if (action.type === GET_NFT_LIST_BEGIN) {
     return {
       ...state,
-      NFTList: action.payload.NftList,
+      isLoading: true,
+    };
+  }
+
+  if (action.type === GET_NFT_LIST_END) {
+    return {
+      ...state,
+      isLoading: false,
+      NFTList: action.payload.nftList,
     };
   }
 
@@ -140,10 +158,9 @@ const reducer = (state, action) => {
       ...state,
       inputValue: {
         ...state.inputValue,
-        TokenIDs: [
-          ...state.inputValue.TokenIDs,
-          ...action.payload.tokenIDsArray,
-        ].join('\n'),
+        TokenIDs: [state.inputValue.TokenIDs, action.payload.tokenIDsArray]
+          .join('\n')
+          .replace(/^\n/, ''),
       },
     };
   }
@@ -153,7 +170,7 @@ const reducer = (state, action) => {
       ...state,
       inputValue: {
         ...state.inputValue,
-        TokenIDs: [...action.payload.tokenIDsArray],
+        TokenIDs: [action.payload.tokenIDsArray].filter(el => el),
       },
     };
   }

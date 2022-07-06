@@ -1,5 +1,6 @@
 import React from 'react';
 import { useBatchTool } from '../../context/toolProvider';
+import Loading from '../Loading';
 import './index.css';
 
 const NFTListSection = () => {
@@ -8,9 +9,13 @@ const NFTListSection = () => {
     handleBulksChange,
     NFTAddressTokenIDsOfOwner,
     multipleTransferationList,
+    isLoading,
+    isTransfering,
   } = useBatchTool();
 
-  return (
+  return isLoading && !isTransfering ? (
+    <Loading />
+  ) : (
     <section
       className={
         NFTAddressTokenIDsOfOwner.length > 0 && NFTList.length > 0

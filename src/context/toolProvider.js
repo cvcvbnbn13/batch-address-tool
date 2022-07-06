@@ -15,11 +15,13 @@ import {
   GET_CSV_TOKENIDS,
   REMOVE_CSV_TOKENIDS,
   GET_NFT_ADDRESS_TOKENIDS,
-  GET_NFT_LIST,
+  GET_NFT_LIST_BEGIN,
+  GET_NFT_LIST_END,
   LIST_BULKS_TOKENIDS,
   REMOVE_BULKS_TOKENIDS,
   CONNECT,
   DECONSTRUCT_CSV,
+  DENY_TRANSFER,
 } from './actions';
 
 import { ethers } from 'ethers';
@@ -41,6 +43,7 @@ const initialState = {
   ERC721Contract: null,
   isLoading: false,
   isApproved: null,
+  isTransfering: false,
   currentUser: '',
   csvTokenIDs: null,
   NFTAddressTokenIDsOfOwner: [],
@@ -60,7 +63,10 @@ const ToolContext = createContext();
 const ToolProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
+  console.log(state.inputValue.TokenIDs);
   useEffect(() => {
+    if (!state.isConnected) return;
+
     async function initTool() {
       try {
         await web3Provider.send('eth_requestAccounts', []);
@@ -84,11 +90,15 @@ const ToolProvider = ({ children }) => {
       }
     }
     initTool();
-  }, [state.inputValue.NFTAddress, state.ethereum?.selectedAddress]);
-
-  console.log(state.isApproved);
+  }, [
+    state.inputValue.NFTAddress,
+    state.ethereum?.selectedAddress,
+    state.isConnected,
+  ]);
 
   useEffect(() => {
+    if (!state.isConnected) return;
+
     async function checkIsApproved() {
       try {
         const isApproved = await state.ERC721Contract?.isApprovedForAll(
@@ -113,6 +123,7 @@ const ToolProvider = ({ children }) => {
     state.BatchTransferContract,
     state.inputValue.NFTAddress,
     state.isApproved,
+    state.isConnected,
   ]);
 
   useEffect(() => {
@@ -178,7 +189,8 @@ const ToolProvider = ({ children }) => {
   useEffect(() => {
     const getNFTList = async () => {
       try {
-        const NftList = [];
+        const nftList = [];
+        dispatch({ type: GET_NFT_LIST_BEGIN });
         for (let i = 0; i < state.NFTAddressTokenIDsOfOwner.length; i++) {
           const tokenURI = await state.ERC721Contract?.tokenURI(
             state.NFTAddressTokenIDsOfOwner[i]
@@ -190,14 +202,14 @@ const ToolProvider = ({ children }) => {
           const { image, name } = await res.json();
           const imageFormat = image.replace('ipfs://', 'ipfs/');
 
-          NftList.push({
+          nftList.push({
             tokenID: state.NFTAddressTokenIDsOfOwner[i],
             name,
             image: `https://gateway.thirdweb.dev/${imageFormat}`,
           });
         }
 
-        dispatch({ type: GET_NFT_LIST, payload: { NftList } });
+        dispatch({ type: GET_NFT_LIST_END, payload: { nftList } });
       } catch (error) {
         console.error(error);
       }
@@ -360,9 +372,9 @@ const ToolProvider = ({ children }) => {
             });
           }
         } else {
-          const tokenIDs = state.inputValue.TokenIDs.split('\n').map(item =>
-            parseInt(item)
-          );
+          const tokenIDs = state.inputValue.TokenIDs.toString()
+            .split('\n')
+            .map(item => parseInt(item));
 
           const tx = await state.BatchTransferContract.batchTransfer(
             state.inputValue.NFTAddress,
@@ -379,6 +391,7 @@ const ToolProvider = ({ children }) => {
       }
       dispatch({ type: TRANSFER_END });
     } catch (error) {
+      dispatch({ type: DENY_TRANSFER });
       console.error(error);
     }
   };
@@ -400,18 +413,18 @@ const ToolProvider = ({ children }) => {
   };
 
   const handleBulksChange = e => {
-    let tokenIDsArray = [];
-
     if (e.target.checked === true) {
-      tokenIDsArray.push(e.target.value);
       dispatch({
         type: LIST_BULKS_TOKENIDS,
         payload: {
-          tokenIDsArray: tokenIDsArray,
+          tokenIDsArray: e.target.value,
         },
       });
     } else if (e.target.checked === false) {
-      let regStr = new RegExp(`${e.target.value}\n*|\n*${e.target.value}`, 'g');
+      let regStr = new RegExp(
+        `${e.target.value}\n*|\n*${e.target.value}| \n.`,
+        'g'
+      );
       const tokenIDsArray = Array.from(state.inputValue.TokenIDs)
         .join('')
         .replace(regStr, '');
