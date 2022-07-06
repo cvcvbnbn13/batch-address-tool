@@ -22,6 +22,7 @@ import {
   CONNECT,
   DECONSTRUCT_CSV,
   DENY_TRANSFER,
+  CHECK_ISUNLOCKED,
 } from './actions';
 
 import { ethers } from 'ethers';
@@ -44,6 +45,7 @@ const initialState = {
   isLoading: false,
   isApproved: null,
   isTransfering: false,
+  isUnlocked: false,
   currentUser: '',
   csvTokenIDs: null,
   NFTAddressTokenIDsOfOwner: [],
@@ -63,7 +65,6 @@ const ToolContext = createContext();
 const ToolProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  console.log(state.inputValue.TokenIDs);
   useEffect(() => {
     if (!state.isConnected) return;
 
@@ -142,6 +143,8 @@ const ToolProvider = ({ children }) => {
     const accounts = arg[0];
     if (accounts.length > 0) {
       dispatch({ type: GET_CURRENT_USER, payload: { accounts } });
+    } else if (accounts.length <= 0) {
+      dispatch({ type: CHECK_ISUNLOCKED, payload: { unlocked: false } });
     }
   };
 
@@ -257,6 +260,24 @@ const ToolProvider = ({ children }) => {
 
     deconstructCsv();
   }, [state.csvTokenIDs]);
+
+  useEffect(() => {
+    const isUnlocked = async () => {
+      let unlocked;
+
+      try {
+        const accounts = await web3Provider.listAccounts();
+
+        unlocked = accounts.length > 0;
+      } catch (e) {
+        console.error(e);
+      }
+
+      dispatch({ type: CHECK_ISUNLOCKED, payload: { unlocked } });
+    };
+
+    isUnlocked();
+  }, [state.currentUser, state.ethereum]);
 
   const connect = async () => {
     try {

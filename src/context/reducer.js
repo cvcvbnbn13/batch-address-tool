@@ -20,6 +20,7 @@ import {
   REMOVE_BULKS_TOKENIDS,
   DECONSTRUCT_CSV,
   DENY_TRANSFER,
+  CHECK_ISUNLOCKED,
 } from './actions';
 
 const reducer = (state, action) => {
@@ -84,6 +85,7 @@ const reducer = (state, action) => {
         ...state.inputValue,
         TokenIDs: '',
       },
+      isUnlocked: true,
     };
   }
   if (action.type === CHECK_IS_APPROVED) {
@@ -194,6 +196,13 @@ const reducer = (state, action) => {
         Recipient: [...recipientsArray].join('\n'),
         TokenIDs: [...tokenIDsArray].join('\n'),
       },
+    };
+  }
+
+  if (action.type === CHECK_ISUNLOCKED) {
+    return {
+      ...state,
+      isUnlocked: action.payload.unlocked,
     };
   }
 };

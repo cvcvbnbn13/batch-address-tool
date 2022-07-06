@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import './index.css';
 import { useBatchTool } from '../../context/toolProvider';
+import { ethers } from 'ethers';
 
 const WalletButtonMenu = () => {
-  const { currentUser, logout, isConnected, connect } = useBatchTool();
+  const { currentUser, logout, isConnected, connect, isUnlocked } =
+    useBatchTool();
   const [showToggle, setShowToggle] = useState(false);
   const handleShowToggle = () => {
     setShowToggle(!showToggle);
@@ -11,7 +13,7 @@ const WalletButtonMenu = () => {
 
   return (
     <div className="walletButton">
-      {currentUser && isConnected ? (
+      {currentUser && isConnected && isUnlocked ? (
         <>
           <button onClick={handleShowToggle}>
             <span>
