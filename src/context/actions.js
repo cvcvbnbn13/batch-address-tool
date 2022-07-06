@@ -13,7 +13,6 @@ export const TRANSFER_BEGIN = 'TRANSFER_BEGIN';
 export const TRANSFER_END = 'TRANSFER_END';
 
 export const CHECK_IS_APPROVED = 'CHECK_IS_APPROVED';
-export const INIT_IS_APPROVED = 'INIT_IS_APPROVED';
 
 export const CONNECT = 'CONNECT';
 export const LOG_OUT = 'LOG_OUT';

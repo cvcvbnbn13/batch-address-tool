@@ -16,7 +16,7 @@ const networkOption = [
 ];
 
 const InputSection = () => {
-  const { inputValue, handleInput } = useBatchTool();
+  const { inputValue, handleInput, multipleTransferationList } = useBatchTool();
   return (
     <div className="input-section">
       <label htmlFor="Network">Network</label>
@@ -43,14 +43,25 @@ const InputSection = () => {
         value={inputValue.NFTAddress}
       />
       <label htmlFor="Recipient">Recipient</label>
-      <textarea
-        name="Recipient"
-        id="Recipient"
-        value={inputValue.Recipient}
-        onChange={handleInput}
-        rows="5"
-        cols="30"
-      />
+      {multipleTransferationList.length > 0 ? (
+        <textarea
+          name="Recipient"
+          id="Recipient"
+          value={inputValue.Recipient}
+          onChange={handleInput}
+          rows="5"
+          cols="30"
+        />
+      ) : (
+        <input
+          type="text"
+          name="Recipient"
+          id="Recipient"
+          value={inputValue.Recipient}
+          onChange={handleInput}
+        />
+      )}
+
       <CSVReader />
 
       <NFTListSection />

@@ -156,7 +156,7 @@ export default function CSVReader() {
                 </div>
               </>
             ) : (
-              'Click to upload CSV TokenID File'
+              'Upload CSV TokenID File to Implement Many to Many'
             )}
           </div>
         </>

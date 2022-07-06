@@ -11,7 +11,6 @@ import {
   TRANSFER_END,
   CHECK_IS_APPROVED,
   GET_CURRENT_USER,
-  INIT_IS_APPROVED,
   LOG_OUT,
   GET_CSV_TOKENIDS,
   REMOVE_CSV_TOKENIDS,
@@ -87,19 +86,16 @@ const ToolProvider = ({ children }) => {
     initTool();
   }, [state.inputValue.NFTAddress, state.ethereum?.selectedAddress]);
 
+  console.log(state.isApproved);
+
   useEffect(() => {
     async function checkIsApproved() {
       try {
-        if (state.inputValue?.NFTAddress !== '') {
-          const isApproved = await state.ERC721Contract?.isApprovedForAll(
-            state.currentUser,
-            state.BatchTransferContract?.address
-          );
-          dispatch({ type: CHECK_IS_APPROVED, payload: isApproved });
-        }
-        if (!state.inputValue?.NFTAddress) {
-          dispatch({ type: INIT_IS_APPROVED });
-        }
+        const isApproved = await state.ERC721Contract?.isApprovedForAll(
+          state.currentUser,
+          state.BatchTransferContract?.address
+        );
+        dispatch({ type: CHECK_IS_APPROVED, payload: isApproved });
       } catch (error) {
         console.error(error);
       }
@@ -314,8 +310,6 @@ const ToolProvider = ({ children }) => {
       });
     }
   };
-
-  console.log(state.multipleTransferationList);
 
   const transfer = async () => {
     if (

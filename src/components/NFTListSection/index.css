@@ -11,7 +11,8 @@
 }
 
 img {
-  width: 10%;
+  width: 10rem;
+  height: 12.5rem;
   margin-right: 1rem;
 }
 
@@ -22,9 +23,10 @@ img {
 }
 
 input[type='checkbox']:checked + img {
-  border: 2px solid rgb(23, 213, 226);
+  box-sizing: border-box;
+  border: 8px solid #2f4f4f;
 }
 
 input[type='checkbox']:checked:hover + img {
-  border: 2px solid rgb(19, 168, 179);
+  border: 8px solid #428b8b;
 }

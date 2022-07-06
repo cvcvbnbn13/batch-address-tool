@@ -9,7 +9,6 @@ import {
   TRANSFER_END,
   CHECK_IS_APPROVED,
   GET_CURRENT_USER,
-  INIT_IS_APPROVED,
   CONNECT,
   LOG_OUT,
   GET_CSV_TOKENIDS,
@@ -85,13 +84,6 @@ const reducer = (state, action) => {
     return {
       ...state,
       isApproved: action.payload,
-    };
-  }
-
-  if (action.type === INIT_IS_APPROVED) {
-    return {
-      ...state,
-      isApproved: false,
     };
   }
 
