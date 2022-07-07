@@ -191,6 +191,7 @@ const ToolProvider = ({ children }) => {
 
   useEffect(() => {
     if (state.multipleTransferationList.length > 0) return;
+    if (!state.isUnlocked) return;
 
     const getNFTList = async () => {
       try {
