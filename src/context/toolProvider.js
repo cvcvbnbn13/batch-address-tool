@@ -211,7 +211,7 @@ const ToolProvider = ({ children }) => {
           nftList.push({
             tokenID: state.NFTAddressTokenIDsOfOwner[i],
             name,
-            image: `https://gateway.thirdweb.dev/${imageFormat}`,
+            image: `https://gateway.ipfs.io/${imageFormat}`,
           });
         }
 

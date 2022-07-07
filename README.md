@@ -25,3 +25,10 @@ cd batch-address-tool
 npm install && npm audit fix
 npm start
 ```
+
+Key.json
+
+```
+PRIVATE_KEY: the PRIVATE KEY of your wallet account.
+INFURA_RINKEBY_URL: the Rinkeby Endpoints of your infura project.
+```
