@@ -190,6 +190,8 @@ const ToolProvider = ({ children }) => {
   ]);
 
   useEffect(() => {
+    if (state.multipleTransferationList.length > 0) return;
+
     const getNFTList = async () => {
       try {
         const nftList = [];
@@ -232,6 +234,7 @@ const ToolProvider = ({ children }) => {
     state.ERC721Contract,
     state.NFTAddressTokenIDsOfOwner,
     state.inputValue.NFTAddress,
+    state.multipleTransferationList,
   ]);
 
   useEffect(() => {
@@ -376,9 +379,9 @@ const ToolProvider = ({ children }) => {
 
         if (state.multipleTransferationList.length > 0) {
           for (let i = 0; i < state.multipleTransferationList.length; i++) {
-            const tokenIDs = state.multipleTransferationList[i].TokenIDs.map(
-              item => parseInt(item)
-            );
+            const tokenIDs = state.multipleTransferationList[i].TokenIDs.join()
+              .split(',')
+              .map(item => parseInt(item));
 
             const tx = await state.BatchTransferContract.batchTransfer(
               state.inputValue.NFTAddress,
@@ -411,6 +414,7 @@ const ToolProvider = ({ children }) => {
         }
       }
       dispatch({ type: TRANSFER_END });
+      removeCSVTokenIDs();
     } catch (error) {
       dispatch({ type: DENY_TRANSFER });
       console.error(error);

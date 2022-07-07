@@ -78,15 +78,20 @@ const reducer = (state, action) => {
     };
   }
   if (action.type === GET_CURRENT_USER) {
-    return {
-      ...state,
-      currentUser: action.payload.accounts[0],
-      inputValue: {
-        ...state.inputValue,
-        TokenIDs: '',
-      },
-      isUnlocked: true,
-    };
+    return state.csvTokenIDs === null
+      ? {
+          ...state,
+          currentUser: action.payload.accounts[0],
+          inputValue: {
+            ...state.inputValue,
+            TokenIDs: '',
+          },
+          isUnlocked: true,
+        }
+      : {
+          ...state,
+          currentUser: action.payload.accounts[0],
+        };
   }
   if (action.type === CHECK_IS_APPROVED) {
     return {
@@ -184,10 +189,14 @@ const reducer = (state, action) => {
       recipientsArray.push(
         action.payload.multipleTransferationList[i].Recipient
       );
+
       tokenIDsArray.push(
-        ...action.payload.multipleTransferationList[i].TokenIDs
+        action.payload.multipleTransferationList[i].TokenIDs.join()
+          .split(',')
+          .join('\n')
       );
     }
+
     return {
       ...state,
       multipleTransferationList: action.payload.multipleTransferationList,
