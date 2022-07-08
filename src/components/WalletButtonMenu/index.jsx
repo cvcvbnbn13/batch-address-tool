@@ -18,7 +18,7 @@ const WalletButtonMenu = () => {
           <button onClick={handleShowToggle}>
             <span>
               Connected{' '}
-              {`${currentUser.slice(0, 3)}...${currentUser
+              {`${currentUser.slice(0, 5)}...${currentUser
                 .slice(-5)
                 .toUpperCase()}`}
             </span>
