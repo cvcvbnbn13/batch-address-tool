@@ -4,8 +4,14 @@ import { InputSection, Loading, WalletButtonMenu } from '../../components';
 import './index.css';
 
 const MainPage = () => {
-  const { approveContract, transfer, isLoading, isApproved, inputValue } =
-    useBatchTool();
+  const {
+    approveContract,
+    transfer,
+    isLoading,
+    isTransfering,
+    isApproved,
+    inputValue,
+  } = useBatchTool();
 
   const { TokenIDs } = inputValue;
 
@@ -27,7 +33,7 @@ const MainPage = () => {
         )}
       </button>
       <button onClick={transfer} disabled={isLoading || !isApproved}>
-        {isApproved && isLoading && TokenIDs !== '' ? <Loading /> : 'Transfer'}
+        {isTransfering ? <Loading /> : 'Transfer'}
       </button>
     </div>
   );

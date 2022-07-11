@@ -14,7 +14,9 @@ const NFTListSection = () => {
     isUnlocked,
   } = useBatchTool();
 
-  return isLoading && !isTransfering ? (
+  return isLoading &&
+    !isTransfering &&
+    multipleTransferationList.length === 0 ? (
     <Loading />
   ) : (
     <section

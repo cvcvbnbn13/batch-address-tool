@@ -203,7 +203,7 @@ const ToolProvider = ({ children }) => {
           );
           const tokenURIFormat = tokenURI.replace('ipfs://', 'ipfs/');
 
-          const res = await fetch(`https://ipfs.io/${tokenURIFormat}`);
+          const res = await fetch(`https://cf-ipfs.com/${tokenURIFormat}`);
 
           const { image, name } = await res.json();
           const imageFormat = image.replace('ipfs://', 'ipfs/');
@@ -211,7 +211,7 @@ const ToolProvider = ({ children }) => {
           nftList.push({
             tokenID: state.NFTAddressTokenIDsOfOwner[i],
             name,
-            image: `https://gateway.ipfs.io/${imageFormat}`,
+            image: `https://cf-ipfs.com/${imageFormat}`,
           });
         }
 
@@ -236,6 +236,7 @@ const ToolProvider = ({ children }) => {
     state.NFTAddressTokenIDsOfOwner,
     state.inputValue.NFTAddress,
     state.multipleTransferationList,
+    state.isUnlocked,
   ]);
 
   useEffect(() => {
@@ -378,24 +379,41 @@ const ToolProvider = ({ children }) => {
       if (state.BatchTransferContract) {
         dispatch({ type: TRANSFER_BEGIN });
 
+        const recipientList = [];
+        const tokenIDList = [];
+
         if (state.multipleTransferationList.length > 0) {
           for (let i = 0; i < state.multipleTransferationList.length; i++) {
             const tokenIDs = state.multipleTransferationList[i].TokenIDs.join()
               .split(',')
               .map(item => parseInt(item));
+            if (tokenIDs.length > 0) {
+              for (let j = 0; j < tokenIDs.length; j++) {
+                recipientList.push(
+                  state.multipleTransferationList[i].Recipient
+                );
+                tokenIDList.push(tokenIDs[j]);
+              }
+            } else {
+              recipientList.push([
+                state.multipleTransferationList[i].Recipient,
+              ]);
 
-            const tx = await state.BatchTransferContract.batchTransfer(
-              state.inputValue.NFTAddress,
-              state.multipleTransferationList[i].Recipient,
-              tokenIDs
-            );
-
-            await toast.promise(tx.wait(), {
-              pending: 'Transfering...',
-              success: 'Transfer successfully',
-              error: 'Transfer unsuccessfully',
-            });
+              tokenIDList.push(state.multipleTransferationList[i].TokenIDs[0]);
+            }
           }
+
+          const tx = await state.BatchTransferContract.batchTransfer(
+            state.inputValue.NFTAddress,
+            recipientList,
+            tokenIDList
+          );
+
+          await toast.promise(tx.wait(), {
+            pending: 'Transfering...',
+            success: 'Transfer successfully',
+            error: 'Transfer unsuccessfully',
+          });
         } else {
           const tokenIDs = state.inputValue.TokenIDs.toString()
             .split('\n')
@@ -403,7 +421,7 @@ const ToolProvider = ({ children }) => {
 
           const tx = await state.BatchTransferContract.batchTransfer(
             state.inputValue.NFTAddress,
-            state.inputValue.Recipient,
+            state.inputValue.Recipient.split(),
             tokenIDs
           );
 
@@ -414,8 +432,8 @@ const ToolProvider = ({ children }) => {
           });
         }
       }
+      await removeCSVTokenIDs();
       dispatch({ type: TRANSFER_END });
-      removeCSVTokenIDs();
     } catch (error) {
       dispatch({ type: DENY_TRANSFER });
       console.error(error);
@@ -429,7 +447,6 @@ const ToolProvider = ({ children }) => {
       console.error(error);
     }
   };
-
   const removeCSVTokenIDs = async e => {
     try {
       await dispatch({ type: REMOVE_CSV_TOKENIDS });
@@ -468,8 +485,8 @@ const ToolProvider = ({ children }) => {
         logout,
         getCSVTokenIDs,
         handleBulksChange,
-        connect,
         removeCSVTokenIDs,
+        connect,
       }}
     >
       {children}

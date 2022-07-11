@@ -9,12 +9,10 @@ interface ERC721Partial {
 
 
 contract BatchTransfer {
-  mapping(address=> mapping(address=> bool)) private _operatorApproved;
 
-
-  function batchTransfer(ERC721Partial tokenContract, address recipient, uint256[] calldata tokenIds) external {
-    for (uint256 index; index < tokenIds.length; index++) {
-        tokenContract.transferFrom(msg.sender, recipient, tokenIds[index]);
-    }
+  function batchTransfer(ERC721Partial tokenContract, address[] calldata recipient, uint256[] calldata tokenIds) external {
+      for (uint256 index; index < tokenIds.length; index++) {
+          tokenContract.transferFrom(msg.sender, recipient[index], tokenIds[index]);
+      }
   }
 }

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import './index.css';
 import { useBatchTool } from '../../context/toolProvider';
-import { ethers } from 'ethers';
 
 const WalletButtonMenu = () => {
   const { currentUser, logout, isConnected, connect, isUnlocked } =
