@@ -3,9 +3,9 @@ import { useBatchTool } from '../../context/toolProvider';
 import './index.css';
 
 const Loading = () => {
-  const { isLoading } = useBatchTool();
+  const { isLoading, isTransfering, isApproving } = useBatchTool();
 
-  return isLoading ? (
+  return isLoading || isTransfering || isApproving ? (
     <div className="spinner">
       <div className="bounce1"></div>
       <div className="bounce2"></div>

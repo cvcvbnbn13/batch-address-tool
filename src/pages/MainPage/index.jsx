@@ -9,11 +9,13 @@ const MainPage = () => {
     transfer,
     isLoading,
     isTransfering,
+    isApproving,
     isApproved,
     inputValue,
   } = useBatchTool();
 
-  const { TokenIDs } = inputValue;
+  console.log(isApproving);
+  console.log(isApproved);
 
   return (
     <div className="mainPage">
@@ -23,16 +25,16 @@ const MainPage = () => {
       </div>
       <InputSection />
 
-      <button onClick={approveContract} disabled={isLoading || isApproved}>
+      <button onClick={approveContract} disabled={isApproving || isApproved}>
         {isApproved ? (
           'Contract was approved'
-        ) : !isApproved && isLoading ? (
+        ) : !isApproved && isApproving ? (
           <Loading />
         ) : (
           'Approve Contract'
         )}
       </button>
-      <button onClick={transfer} disabled={isLoading || !isApproved}>
+      <button onClick={transfer} disabled={isTransfering || !isApproved}>
         {isTransfering ? <Loading /> : 'Transfer'}
       </button>
     </div>

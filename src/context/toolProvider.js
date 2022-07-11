@@ -45,6 +45,7 @@ const initialState = {
   isLoading: false,
   isApproved: null,
   isTransfering: false,
+  isApproving: false,
   isUnlocked: false,
   currentUser: '',
   csvTokenIDs: null,
@@ -341,6 +342,7 @@ const ToolProvider = ({ children }) => {
       dispatch({
         type: GET_APPROVE_END,
       });
+      dispatch({ type: CHECK_IS_APPROVED, payload: true });
     } catch (error) {
       console.error(error);
       dispatch({

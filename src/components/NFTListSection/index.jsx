@@ -11,11 +11,13 @@ const NFTListSection = () => {
     multipleTransferationList,
     isLoading,
     isTransfering,
+    isApproving,
     isUnlocked,
   } = useBatchTool();
 
   return isLoading &&
     !isTransfering &&
+    !isApproving &&
     multipleTransferationList.length === 0 ? (
     <Loading />
   ) : (

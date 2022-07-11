@@ -47,27 +47,25 @@ const reducer = (state, action) => {
   if (action.type === GET_APPROVE_BEGIN) {
     return {
       ...state,
-      isLoading: true,
+      isApproving: true,
     };
   }
   if (action.type === GET_APPROVE_END) {
     return {
       ...state,
-      isLoading: false,
+      isApproving: false,
     };
   }
 
   if (action.type === TRANSFER_BEGIN) {
     return {
       ...state,
-      isLoading: true,
       isTransfering: true,
     };
   }
   if (action.type === TRANSFER_END) {
     return {
       ...initialState,
-      isLoading: false,
       isTransfering: false,
     };
   }
