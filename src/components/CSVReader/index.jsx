@@ -26,7 +26,6 @@ const styles = {
     borderRadius: 20,
     display: 'flex',
     flexDirection: 'column',
-    height: '100%',
     justifyContent: 'center',
     padding: 20,
     marginBottom: '2rem',

@@ -1,6 +1,12 @@
 import React from 'react';
 import { useBatchTool } from '../../context/toolProvider';
-import { InputSection, Loading, WalletButtonMenu } from '../../components';
+import {
+  InputSection,
+  Loading,
+  WalletButtonMenu,
+  CSVReader,
+  NFTListSection,
+} from '../../components';
 import './index.css';
 
 const MainPage = () => {
@@ -20,20 +26,26 @@ const MainPage = () => {
         <h2>Batch Transfer</h2>
         <WalletButtonMenu />
       </div>
-      <InputSection />
-
-      <button onClick={approveContract} disabled={isApproving || isApproved}>
-        {isApproved ? (
-          'Contract was approved'
-        ) : !isApproved && isApproving ? (
-          <Loading />
-        ) : (
-          'Approve Contract'
-        )}
-      </button>
-      <button onClick={transfer} disabled={isTransfering || !isApproved}>
-        {isTransfering ? <Loading /> : 'Transfer'}
-      </button>
+      <div className="mainpage-input-container">
+        <InputSection />
+        <CSVReader />
+      </div>
+      <div className="mainpage-button-container">
+        <button onClick={approveContract} disabled={isApproving || isApproved}>
+          {isApproved ? (
+            'Contract was approved'
+          ) : !isApproved && isApproving ? (
+            <Loading />
+          ) : (
+            'Approve Contract'
+          )}
+        </button>
+        <button onClick={transfer} disabled={isTransfering || !isApproved}>
+          {isTransfering ? <Loading /> : 'Transfer'}
+        </button>
+      </div>
+      <br />
+      <NFTListSection />
     </div>
   );
 };
