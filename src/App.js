@@ -8,8 +8,7 @@ function App() {
   if (
     inputValue.Recipient !== '' ||
     inputValue.NFTAddress !== '' ||
-    inputValue.TokenIDs !== '' ||
-    inputValue.Network !== ''
+    inputValue.TokenIDs !== ''
   )
     window.onbeforeunload = function (e) {
       const dialogText = '等一下啦';

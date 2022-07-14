@@ -13,23 +13,29 @@ const NFTListSection = () => {
     isTransfering,
     isApproving,
     isUnlocked,
+    inputValue,
   } = useBatchTool();
 
   return isLoading &&
     !isTransfering &&
     !isApproving &&
+    inputValue.NFTAddress !== '' &&
     multipleTransferationList.length === 0 ? (
     <Loading />
   ) : (
     <section
       className={
-        NFTAddressTokenIDsOfOwner.length > 0 && NFTList.length > 0 && isUnlocked
+        NFTAddressTokenIDsOfOwner.length > 0 &&
+        NFTList.length > 0 &&
+        inputValue.NFTAddress !== '' &&
+        isUnlocked
           ? 'nftList-section'
           : ''
       }
     >
       {multipleTransferationList.length === 0 &&
       NFTAddressTokenIDsOfOwner.length > 0 &&
+      inputValue.NFTAddress !== '' &&
       NFTList.length > 0 &&
       isUnlocked ? (
         <div className="nft-img">

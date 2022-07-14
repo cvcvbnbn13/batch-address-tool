@@ -4,36 +4,22 @@ import CSVReader from '../CSVReader';
 import NFTListSection from '../NFTListSection';
 import './index.css';
 
-const networkOption = [
-  {
-    title: 'Pick a network',
-    value: '',
-  },
-  {
-    title: 'Ethereum Rinkeby test network',
-    value: 'rinkeby',
-  },
-];
+const chainId = {
+  '0x4': 'Rinkeby',
+};
 
 const InputSection = () => {
-  const { inputValue, handleInput, multipleTransferationList } = useBatchTool();
+  const { inputValue, handleInput, multipleTransferationList, ethereum } =
+    useBatchTool();
   return (
     <div className="input-section">
-      <label htmlFor="Network">Network</label>
-      <select
-        name="Network"
-        id="Network"
-        value={inputValue.Network}
-        onChange={handleInput}
-      >
-        {networkOption.map(item => {
-          return (
-            <option value={item.value} key={item.title}>
-              {item.title}
-            </option>
-          );
-        })}
-      </select>
+      <div className="network-container">
+        <span
+          className={ethereum?.chainId === '0x4' ? 'connect' : 'disconnect'}
+        >
+          Rinkeby
+        </span>
+      </div>
       <label htmlFor="NFTAddress">NFTContract Address</label>
       <input
         type="text"

@@ -11,6 +11,7 @@ import {
   TRANSFER_END,
   CHECK_IS_APPROVED,
   GET_CURRENT_USER,
+  GET_CURRENT_CHAINID,
   LOG_OUT,
   GET_CSV_TOKENIDS,
   REMOVE_CSV_TOKENIDS,
@@ -48,6 +49,7 @@ const initialState = {
   isApproving: false,
   isUnlocked: false,
   currentUser: '',
+  currentChainId: '',
   csvTokenIDs: null,
   NFTAddressTokenIDsOfOwner: [],
   NFTList: [],
@@ -55,7 +57,6 @@ const initialState = {
   multipleTransferationList: [],
   inputValue: {
     NFTAddress: '',
-    Network: '',
     TokenIDs: '',
     Recipient: '',
   },
@@ -140,12 +141,28 @@ const ToolProvider = ({ children }) => {
     }
   }, [state.ethereum]);
 
+  useEffect(() => {
+    if (state.ethereum) {
+      state.ethereum?.on('chainChanged', handleChainChanged);
+      return () => {
+        state.ethereum?.removeListener('chainChanged', handleChainChanged);
+      };
+    }
+  }, [state.ethereum]);
+
   const handleAccountsChanged = (...arg) => {
     const accounts = arg[0];
     if (accounts.length > 0) {
       dispatch({ type: GET_CURRENT_USER, payload: { accounts } });
     } else if (accounts.length <= 0) {
       dispatch({ type: CHECK_ISUNLOCKED, payload: { unlocked: false } });
+    }
+  };
+  const handleChainChanged = (...arg) => {
+    const chainId = arg[0];
+    console.log(chainId);
+    if (chainId !== '') {
+      dispatch({ type: GET_CURRENT_CHAINID, payload: { chainId } });
     }
   };
 
@@ -195,6 +212,8 @@ const ToolProvider = ({ children }) => {
     if (!state.isUnlocked) return;
 
     const getNFTList = async () => {
+      if (state.inputValue.NFTAddress === '') return;
+
       try {
         const nftList = [];
         dispatch({ type: GET_NFT_LIST_BEGIN });
@@ -309,8 +328,8 @@ const ToolProvider = ({ children }) => {
     if (!state.inputValue.NFTAddress) {
       alert('Please fill in contract address for ERC-721 token contract.');
       return;
-    } else if (!state.inputValue.Network) {
-      alert('Please pick a network.');
+    } else if (state.ethereum?.chainId !== '0x4') {
+      alert('Please use the Rinkeby chain');
       return;
     }
 
@@ -364,8 +383,8 @@ const ToolProvider = ({ children }) => {
     if (!state.inputValue.NFTAddress) {
       alert('Please fill in contract address for ERC-721 token contract.');
       return;
-    } else if (!state.inputValue.Network) {
-      alert('Please pick a network.');
+    } else if (state.ethereum?.chainId !== '0x4') {
+      alert('Please use the Rinkeby chain');
       return;
     } else if (!state.inputValue.Recipient) {
       alert('Please fill in recipient address');

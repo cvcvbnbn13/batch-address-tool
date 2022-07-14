@@ -14,9 +14,6 @@ const MainPage = () => {
     inputValue,
   } = useBatchTool();
 
-  console.log(isApproving);
-  console.log(isApproved);
-
   return (
     <div className="mainPage">
       <div className="banner">

@@ -21,6 +21,7 @@ import {
   DECONSTRUCT_CSV,
   DENY_TRANSFER,
   CHECK_ISUNLOCKED,
+  GET_CURRENT_CHAINID,
 } from './actions';
 
 const reducer = (state, action) => {
@@ -91,6 +92,14 @@ const reducer = (state, action) => {
           currentUser: action.payload.accounts[0],
         };
   }
+
+  if (action.type === GET_CURRENT_CHAINID) {
+    return {
+      ...state,
+      currentChains: action.payload.chainId,
+    };
+  }
+
   if (action.type === CHECK_IS_APPROVED) {
     return {
       ...state,
