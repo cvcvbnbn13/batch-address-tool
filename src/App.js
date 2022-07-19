@@ -5,11 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const { inputValue } = useBatchTool();
-  if (
-    inputValue.Recipient !== '' ||
-    inputValue.NFTAddress !== '' ||
-    inputValue.TokenIDs !== ''
-  )
+  if (inputValue.NFTAddress !== '' || inputValue.RecipientandTokenIDs !== '')
     window.onbeforeunload = function (e) {
       const dialogText = '等一下啦';
       e.returnValue = dialogText;

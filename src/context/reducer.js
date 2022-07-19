@@ -3,6 +3,7 @@ import { initialState } from './toolProvider';
 import {
   INIT_BATCH_TOOL,
   HANDLE_INPUT_TOOL,
+  HANDLE_NFTITEM_INPUT_TOOL,
   GET_APPROVE_BEGIN,
   GET_APPROVE_END,
   TRANSFER_BEGIN,
@@ -22,6 +23,13 @@ import {
   DENY_TRANSFER,
   CHECK_ISUNLOCKED,
   GET_CURRENT_CHAINID,
+  CHECK_ADDR_IS_CONTRACT,
+  ADDR_IS_NOT_CONTRACT,
+  ERC_721_CHECK,
+  ERC_1155_CHECK,
+  NFTADDRESS_IS_EMPTY,
+  IMPORT_RECIPIENT,
+  CLEAN_ALL_NFT_RECIPIENT,
 } from './actions';
 
 const reducer = (state, action) => {
@@ -32,6 +40,7 @@ const reducer = (state, action) => {
       currentUser: window.ethereum?.selectedAddress,
       BatchTransferContract: action.payload.signedContract,
       ERC721Contract: action.payload.signedERC721Contract,
+      ERC1155Contract: action.payload.signedERC1155Contract,
     };
   }
 
@@ -45,6 +54,23 @@ const reducer = (state, action) => {
     };
   }
 
+  if (action.type === HANDLE_NFTITEM_INPUT_TOOL) {
+    return {
+      ...state,
+      inputValue: {
+        ...state.inputValue,
+        RecipientandTokenIDs: [action.payload.tokenIDsArray].filter(el => el),
+      },
+      NFTItemRecipient: {
+        ...state.NFTItemRecipient,
+        [action.payload.name]: {
+          ...state.NFTItemRecipient[action.payload.name],
+          recipient: action.payload.value,
+          checked: false,
+        },
+      },
+    };
+  }
   if (action.type === GET_APPROVE_BEGIN) {
     return {
       ...state,
@@ -73,7 +99,7 @@ const reducer = (state, action) => {
   if (action.type === DENY_TRANSFER) {
     return {
       ...state,
-      isLoading: false,
+      isTransfering: false,
     };
   }
   if (action.type === GET_CURRENT_USER) {
@@ -83,9 +109,10 @@ const reducer = (state, action) => {
           currentUser: action.payload.accounts[0],
           inputValue: {
             ...state.inputValue,
-            TokenIDs: '',
+            RecipientandTokenIDs: '',
           },
           isUnlocked: true,
+          NFTList: [],
         }
       : {
           ...state,
@@ -139,8 +166,7 @@ const reducer = (state, action) => {
       multipleTransferationList: [],
       inputValue: {
         ...state.inputValue,
-        Recipient: '',
-        TokenIDs: '',
+        RecipientandTokenIDs: '',
       },
     };
   }
@@ -156,6 +182,7 @@ const reducer = (state, action) => {
     return {
       ...state,
       isLoading: true,
+      isFetchNFTData: true,
     };
   }
 
@@ -163,6 +190,7 @@ const reducer = (state, action) => {
     return {
       ...state,
       isLoading: false,
+      isFetchNFTData: false,
       NFTList: action.payload.nftList,
     };
   }
@@ -172,9 +200,19 @@ const reducer = (state, action) => {
       ...state,
       inputValue: {
         ...state.inputValue,
-        TokenIDs: [state.inputValue.TokenIDs, action.payload.tokenIDsArray]
+        RecipientandTokenIDs: [
+          state.inputValue.RecipientandTokenIDs,
+          [action.payload.recipient, action.payload.value],
+        ]
           .join('\n')
           .replace(/^\n/, ''),
+      },
+      NFTItemRecipient: {
+        ...state.NFTItemRecipient,
+        [action.payload.value]: {
+          ...state.NFTItemRecipient[action.payload.value],
+          checked: true,
+        },
       },
     };
   }
@@ -184,24 +222,29 @@ const reducer = (state, action) => {
       ...state,
       inputValue: {
         ...state.inputValue,
-        TokenIDs: [action.payload.tokenIDsArray].filter(el => el),
+        RecipientandTokenIDs: [action.payload.tokenIDsArray].filter(el => el),
+      },
+      NFTItemRecipient: {
+        ...state.NFTItemRecipient,
+        [action.payload.value]: {
+          ...state.NFTItemRecipient[action.payload.value],
+          checked: false,
+        },
       },
     };
   }
 
   if (action.type === DECONSTRUCT_CSV) {
-    const recipientsArray = [];
     const tokenIDsArray = [];
     for (let i = 0; i < action.payload.multipleTransferationList.length; i++) {
-      recipientsArray.push(
-        action.payload.multipleTransferationList[i].Recipient
-      );
-
-      tokenIDsArray.push(
-        action.payload.multipleTransferationList[i].TokenIDs.join()
-          .split(',')
-          .join('\n')
-      );
+      const tokenIDs =
+        action.payload.multipleTransferationList[i]?.TokenIDs.join().split(',');
+      for (let j = 0; j < tokenIDs.length; j++) {
+        tokenIDsArray.push([
+          action.payload.multipleTransferationList[i]?.Recipient,
+          tokenIDs[j],
+        ]);
+      }
     }
 
     return {
@@ -209,8 +252,7 @@ const reducer = (state, action) => {
       multipleTransferationList: action.payload.multipleTransferationList,
       inputValue: {
         ...state.inputValue,
-        Recipient: [...recipientsArray].join('\n'),
-        TokenIDs: [...tokenIDsArray].join('\n'),
+        RecipientandTokenIDs: [...tokenIDsArray].join('\n'),
       },
     };
   }
@@ -219,6 +261,101 @@ const reducer = (state, action) => {
     return {
       ...state,
       isUnlocked: action.payload.unlocked,
+    };
+  }
+
+  if (action.type === CHECK_ADDR_IS_CONTRACT) {
+    return {
+      ...state,
+      ContractValidatePart: {
+        ...state.ContractValidatePart,
+        addrIsContract: action.payload.isContract,
+      },
+    };
+  }
+
+  if (action.type === ADDR_IS_NOT_CONTRACT) {
+    return {
+      ...state,
+      ContractValidatePart: {
+        addrIsContract: action.payload.isContract,
+        ERC721Check: null,
+        ERC1155Check: null,
+      },
+    };
+  }
+  if (action.type === ERC_721_CHECK) {
+    return {
+      ...state,
+      ContractValidatePart: {
+        ...state.ContractValidatePart,
+        ERC721Check: action.payload.res,
+      },
+    };
+  }
+
+  if (action.type === ERC_1155_CHECK) {
+    return {
+      ...state,
+      ContractValidatePart: {
+        ...state.ContractValidatePart,
+        ERC1155Check: action.payload.res,
+      },
+    };
+  }
+
+  if (action.type === NFTADDRESS_IS_EMPTY) {
+    return {
+      ...initialState,
+    };
+  }
+
+  if (action.type === IMPORT_RECIPIENT) {
+    Object.values(state.NFTItemRecipient).forEach(el => {
+      if (el.checked === true) {
+        el.recipient = action.payload;
+      }
+    });
+
+    const res = Object.entries(state.NFTItemRecipient).filter(
+      ([key, value]) => {
+        return value.checked === true;
+      }
+    );
+
+    const rtArray = [];
+
+    for (let i = 0; i < res.length; i++) {
+      rtArray.push([res[i][1].recipient, res[i][0]]);
+    }
+
+    // Object.entries(state.NFTItemRecipient).forEach(([key, value]) => {
+    //   if (value.checked === true) {
+    //     state.inputValue.RecipientandTokenIDs = [
+    //       state.inputValue.RecipientandTokenIDs,
+    //       [action.payload, key],
+    //     ]
+    //       .join('\n')
+    //       .replace(/^\n/, '');
+    //   }
+    // });
+
+    return {
+      ...state,
+      inputValue: {
+        ...state.inputValue,
+        RecipientandTokenIDs: rtArray.join('\n').replace(/^\n/, ''),
+      },
+    };
+  }
+
+  if (action.type === CLEAN_ALL_NFT_RECIPIENT) {
+    return {
+      ...state,
+      inputValue: {
+        ...state.inputValue,
+        RecipientandTokenIDs: '',
+      },
     };
   }
 };

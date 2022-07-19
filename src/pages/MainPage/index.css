@@ -27,7 +27,13 @@ h2 {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
+  gap: 2rem;
+}
+
+.csvreader-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 button {
@@ -37,4 +43,83 @@ button {
   font-size: 1rem;
   background: transparent;
   border-radius: 5px;
+}
+
+.show-nft {
+  margin: 3rem 0 1rem;
+}
+
+.show-nft h3 {
+  position: relative;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  width: fit-content;
+  margin: auto;
+  padding: 0.5rem;
+  border: 1px solid #222;
+  cursor: pointer;
+  border-radius: 5px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+.show-nft h3:hover {
+  background-color: #000;
+  color: #fff;
+}
+
+.show-nft h3:before,
+.show-nft h3:after {
+  background-color: #ccc;
+  position: absolute;
+  content: '';
+  height: 1px;
+
+  width: 10rem;
+  bottom: 0.5rem;
+}
+
+.show-nft h3:before {
+  left: -12rem;
+}
+.show-nft h3:after {
+  right: -12rem;
+}
+
+@media (max-width: 768px) {
+  .show-nft h3:before,
+  .show-nft h3:after {
+    width: 8rem;
+  }
+
+  .show-nft h3:before {
+    left: -10rem;
+  }
+  .show-nft h3:after {
+    right: -10rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .show-nft h3:before,
+  .show-nft h3:after {
+    width: 3rem;
+  }
+
+  .show-nft h3:before {
+    left: -4rem;
+  }
+  .show-nft h3:after {
+    right: -4rem;
+  }
+}
+
+@media (max-width: 378px) {
+  .show-nft h3:before,
+  .show-nft h3:after {
+    width: 0;
+  }
 }

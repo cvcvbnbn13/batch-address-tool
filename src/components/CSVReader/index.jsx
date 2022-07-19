@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useBatchTool } from '../../context/toolProvider';
+import { FiUpload } from 'react-icons/fi';
 
 import {
   useCSVReader,
@@ -29,6 +30,7 @@ const styles = {
     justifyContent: 'center',
     padding: 20,
     marginBottom: '2rem',
+    flex: 1,
   },
   file: {
     background: 'linear-gradient(to bottom, #EEE, #2f4f4f)',
@@ -155,7 +157,7 @@ export default function CSVReader() {
                 </div>
               </>
             ) : (
-              'Upload CSV TokenID File to Implement Many to Many'
+              <FiUpload size="3rem" />
             )}
           </div>
         </>

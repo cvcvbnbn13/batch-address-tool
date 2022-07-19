@@ -5,6 +5,7 @@ import reducer from './reducer';
 import {
   INIT_BATCH_TOOL,
   HANDLE_INPUT_TOOL,
+  HANDLE_NFTITEM_INPUT_TOOL,
   GET_APPROVE_BEGIN,
   GET_APPROVE_END,
   TRANSFER_BEGIN,
@@ -24,10 +25,21 @@ import {
   DECONSTRUCT_CSV,
   DENY_TRANSFER,
   CHECK_ISUNLOCKED,
+  CHECK_ADDR_IS_CONTRACT,
+  ADDR_IS_NOT_CONTRACT,
+  ERC_721_CHECK,
+  ERC_1155_CHECK,
+  NFTADDRESS_IS_EMPTY,
+  IMPORT_RECIPIENT,
+  CLEAN_ALL_NFT_RECIPIENT,
 } from './actions';
 
 import { ethers } from 'ethers';
-import { getBatchTransferContract, getERC721Contract } from '../utils';
+import {
+  getBatchTransferContract,
+  getERC721Contract,
+  getERC1155Contract,
+} from '../utils';
 
 const provider = ethers.getDefaultProvider('rinkeby', {
   infura: {
@@ -43,6 +55,7 @@ const initialState = {
   provider,
   BatchTransferContract: null,
   ERC721Contract: null,
+  ERC1155Contract: null,
   isLoading: false,
   isApproved: null,
   isTransfering: false,
@@ -51,18 +64,27 @@ const initialState = {
   currentUser: '',
   currentChainId: '',
   csvTokenIDs: null,
+  ContractValidatePart: {
+    addrIsContract: null,
+    ERC721Check: null,
+    ERC1155Check: null,
+  },
   NFTAddressTokenIDsOfOwner: [],
   NFTList: [],
   isConnected: true,
   multipleTransferationList: [],
   inputValue: {
     NFTAddress: '',
-    TokenIDs: '',
-    Recipient: '',
+    RecipientandTokenIDs: '',
   },
+  NFTItemRecipient: {},
+  isFetchNFTData: false,
 };
 
 const ToolContext = createContext();
+
+const ERC1155IID = '0xd9b67a26';
+const ERC721IID = '0x80ac58cd';
 
 const ToolProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -80,13 +102,22 @@ const ToolProvider = ({ children }) => {
           state.inputValue.NFTAddress,
           provider
         );
+        const ERC1155Contract = await getERC1155Contract(
+          state.inputValue.NFTAddress,
+          provider
+        );
 
         const signedContract = contract.connect(signer);
         const signedERC721Contract = ERC721Contract.connect(signer);
+        const signedERC1155Contract = ERC1155Contract.connect(signer);
 
         dispatch({
           type: INIT_BATCH_TOOL,
-          payload: { signedContract, signedERC721Contract },
+          payload: {
+            signedContract,
+            signedERC721Contract,
+            signedERC1155Contract,
+          },
         });
       } catch (error) {
         console.error(error);
@@ -98,6 +129,16 @@ const ToolProvider = ({ children }) => {
     state.ethereum?.selectedAddress,
     state.isConnected,
   ]);
+
+  useEffect(() => {
+    if (state.inputValue.NFTAddress !== '') return;
+
+    const addressIsEmpty = async () => {
+      await dispatch({ type: NFTADDRESS_IS_EMPTY });
+    };
+
+    addressIsEmpty();
+  }, [state.inputValue.NFTAddress]);
 
   useEffect(() => {
     if (!state.isConnected) return;
@@ -150,6 +191,67 @@ const ToolProvider = ({ children }) => {
     }
   }, [state.ethereum]);
 
+  useEffect(() => {
+    if (state.inputValue.NFTAddress === '') return;
+
+    const checkAddrIsContract = async () => {
+      try {
+        const res = await provider.getCode(state.inputValue.NFTAddress);
+        const isContract = res !== '0x';
+        dispatch({ type: CHECK_ADDR_IS_CONTRACT, payload: { isContract } });
+      } catch (error) {
+        dispatch({
+          type: ADDR_IS_NOT_CONTRACT,
+          payload: { isContract: false },
+        });
+        console.error(error);
+      }
+    };
+
+    checkAddrIsContract();
+  }, [state.inputValue.NFTAddress]);
+
+  useEffect(() => {
+    if (
+      state.ERC721Contract === null ||
+      state.ERC721Contract?.address === '' ||
+      state.ERC721Contract?.address !== state.inputValue.NFTAddress
+    )
+      return;
+
+    const checkERC721 = async () => {
+      try {
+        const res = await state.ERC721Contract?.supportsInterface(ERC721IID);
+
+        dispatch({ type: ERC_721_CHECK, payload: { res } });
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    checkERC721();
+  }, [state.ERC721Contract, state.inputValue.NFTAddress]);
+
+  useEffect(() => {
+    if (
+      state.ERC1155Contract === null ||
+      state.ERC1155Contract?.address === '' ||
+      state.ERC1155Contract?.address !== state.inputValue.NFTAddress
+    )
+      return;
+
+    const checkERC1155 = async () => {
+      try {
+        const res = await state.ERC1155Contract?.supportsInterface(ERC1155IID);
+        dispatch({ type: ERC_1155_CHECK, payload: { res } });
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    checkERC1155();
+  }, [state.ERC1155Contract, state.inputValue.NFTAddress]);
+
   const handleAccountsChanged = (...arg) => {
     const accounts = arg[0];
     if (accounts.length > 0) {
@@ -160,13 +262,18 @@ const ToolProvider = ({ children }) => {
   };
   const handleChainChanged = (...arg) => {
     const chainId = arg[0];
-    console.log(chainId);
     if (chainId !== '') {
       dispatch({ type: GET_CURRENT_CHAINID, payload: { chainId } });
     }
   };
 
   useEffect(() => {
+    if (
+      state.inputValue.NFTAddress === '' ||
+      state.inputValue.NFTAddress !== state.ERC721Contract?.address
+    )
+      return;
+
     const getNFTAddressTokenIDsOfOwner = async () => {
       try {
         if (state.ERC721Contract) {
@@ -194,12 +301,7 @@ const ToolProvider = ({ children }) => {
       }
     };
 
-    if (
-      state.inputValue.NFTAddress !== '' &&
-      state.inputValue.NFTAddress === state.ERC721Contract?.address
-    ) {
-      getNFTAddressTokenIDsOfOwner();
-    }
+    getNFTAddressTokenIDsOfOwner();
   }, [
     state.inputValue.NFTAddress,
     state.ERC721Contract?.address,
@@ -210,13 +312,17 @@ const ToolProvider = ({ children }) => {
   useEffect(() => {
     if (state.multipleTransferationList.length > 0) return;
     if (!state.isUnlocked) return;
+    if (!state.ContractValidatePart.addrIsContract) return;
+    if (
+      state.inputValue.NFTAddress === '' ||
+      state.inputValue.NFTAddress !== state.ERC721Contract?.address
+    )
+      return;
+    if (!state.isFetchNFTData) return;
 
     const getNFTList = async () => {
-      if (state.inputValue.NFTAddress === '') return;
-
       try {
         const nftList = [];
-        dispatch({ type: GET_NFT_LIST_BEGIN });
         for (let i = 0; i < state.NFTAddressTokenIDsOfOwner.length; i++) {
           const tokenURI = await state.ERC721Contract?.tokenURI(
             state.NFTAddressTokenIDsOfOwner[i]
@@ -233,6 +339,8 @@ const ToolProvider = ({ children }) => {
             name,
             image: `https://cf-ipfs.com/${imageFormat}`,
           });
+
+          state.NFTItemRecipient[state.NFTAddressTokenIDsOfOwner[i]] = '';
         }
 
         dispatch({ type: GET_NFT_LIST_END, payload: { nftList } });
@@ -241,22 +349,20 @@ const ToolProvider = ({ children }) => {
       }
     };
 
-    if (
-      state.inputValue.NFTAddress !== '' &&
-      state.inputValue.NFTAddress === state.ERC721Contract?.address
-    ) {
-      getNFTList();
-    }
+    getNFTList();
 
     return () => {
       getNFTList();
     };
   }, [
+    state.isFetchNFTData,
     state.ERC721Contract,
     state.NFTAddressTokenIDsOfOwner,
     state.inputValue.NFTAddress,
     state.multipleTransferationList,
     state.isUnlocked,
+    state.ContractValidatePart.addrIsContract,
+    state.NFTItemRecipient,
   ]);
 
   useEffect(() => {
@@ -324,6 +430,25 @@ const ToolProvider = ({ children }) => {
     });
   };
 
+  const handleNFTItemInput = e => {
+    let regStr = new RegExp(
+      `.*,${e.target.name}\n*|\n*.*,${e.target.name}`,
+      'g'
+    );
+
+    const tokenIDsArray = Array.from(state.inputValue.RecipientandTokenIDs)
+      .join('')
+      .replace(regStr, '');
+    dispatch({
+      type: HANDLE_NFTITEM_INPUT_TOOL,
+      payload: { name: e.target.name, value: e.target.value, tokenIDsArray },
+    });
+  };
+
+  const fetchNFTData = () => {
+    dispatch({ type: GET_NFT_LIST_BEGIN });
+  };
+
   const approveContract = async () => {
     if (!state.inputValue.NFTAddress) {
       alert('Please fill in contract address for ERC-721 token contract.');
@@ -386,8 +511,8 @@ const ToolProvider = ({ children }) => {
     } else if (state.ethereum?.chainId !== '0x4') {
       alert('Please use the Rinkeby chain');
       return;
-    } else if (!state.inputValue.Recipient) {
-      alert('Please fill in recipient address');
+    } else if (!state.inputValue.RecipientandTokenIDs) {
+      alert('Please fill in Recipient address and TokenID');
       return;
     }
 
@@ -400,8 +525,8 @@ const ToolProvider = ({ children }) => {
       if (state.BatchTransferContract) {
         dispatch({ type: TRANSFER_BEGIN });
 
-        const recipientList = [];
-        const tokenIDList = [];
+        let recipientList = [];
+        let tokenIDList = [];
 
         if (state.multipleTransferationList.length > 0) {
           for (let i = 0; i < state.multipleTransferationList.length; i++) {
@@ -436,14 +561,18 @@ const ToolProvider = ({ children }) => {
             error: 'Transfer unsuccessfully',
           });
         } else {
-          const tokenIDs = state.inputValue.TokenIDs.toString()
-            .split('\n')
-            .map(item => parseInt(item));
+          state.inputValue.RecipientandTokenIDs?.split('\n')
+            .map(el => el.split(','))
+            .map(el => {
+              recipientList.push(el[0]);
+              tokenIDList.push(parseInt(el[1], 10));
+              return false;
+            });
 
           const tx = await state.BatchTransferContract.batchTransfer(
             state.inputValue.NFTAddress,
-            state.inputValue.Recipient.split(),
-            tokenIDs
+            recipientList,
+            tokenIDList
           );
 
           await toast.promise(tx.wait(), {
@@ -481,19 +610,41 @@ const ToolProvider = ({ children }) => {
       dispatch({
         type: LIST_BULKS_TOKENIDS,
         payload: {
-          tokenIDsArray: e.target.value,
+          recipient: state.NFTItemRecipient[e.target.value].recipient,
+          value: e.target.value,
         },
       });
     } else if (e.target.checked === false) {
       let regStr = new RegExp(
-        `${e.target.value}\n*|\n*${e.target.value}| \n.`,
+        `,${e.target.value}\n*|\n*,${e.target.value}|${
+          state.NFTItemRecipient[e.target.value].recipient
+        },${e.target.value}\n*|\n*${
+          state.NFTItemRecipient[e.target.value].recipient
+        },${e.target.value}| \n.`,
         'g'
       );
-      const tokenIDsArray = Array.from(state.inputValue.TokenIDs)
+      const tokenIDsArray = Array.from(state.inputValue.RecipientandTokenIDs)
         .join('')
         .replace(regStr, '');
-      dispatch({ type: REMOVE_BULKS_TOKENIDS, payload: { tokenIDsArray } });
+      dispatch({
+        type: REMOVE_BULKS_TOKENIDS,
+        payload: {
+          tokenIDsArray,
+          value: e.target.value,
+        },
+      });
     }
+  };
+
+  const importRecipient = recipient => {
+    dispatch({ type: IMPORT_RECIPIENT, payload: recipient });
+  };
+
+  const cleanAllRecipients = () => {
+    for (let i = 0; i < state.NFTAddressTokenIDsOfOwner.length; i++) {
+      state.NFTItemRecipient[state.NFTAddressTokenIDsOfOwner[i]] = '';
+    }
+    dispatch({ type: CLEAN_ALL_NFT_RECIPIENT });
   };
 
   return (
@@ -501,13 +652,17 @@ const ToolProvider = ({ children }) => {
       value={{
         ...state,
         handleInput,
+        handleNFTItemInput,
         approveContract,
+        fetchNFTData,
         transfer,
         logout,
         getCSVTokenIDs,
         handleBulksChange,
         removeCSVTokenIDs,
         connect,
+        importRecipient,
+        cleanAllRecipients,
       }}
     >
       {children}

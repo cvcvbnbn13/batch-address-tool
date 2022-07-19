@@ -13,12 +13,17 @@ const MainPage = () => {
   const {
     approveContract,
     transfer,
-    isLoading,
     isTransfering,
     isApproving,
     isApproved,
+    fetchNFTData,
+    NFTAddressTokenIDsOfOwner,
+    multipleTransferationList,
     inputValue,
+    ContractValidatePart,
   } = useBatchTool();
+
+  const { addrIsContract } = ContractValidatePart;
 
   return (
     <div className="mainPage">
@@ -28,7 +33,18 @@ const MainPage = () => {
       </div>
       <div className="mainpage-input-container">
         <InputSection />
-        <CSVReader />
+        <div className="csvreader-container">
+          <label>Upload CSV</label>
+          <br />
+          <p>
+            You can{' '}
+            <a href="./tokenIDs.csv" download>
+              download csv example here.
+            </a>{' '}
+            please make sure you recpient address are correct.
+          </p>
+          <CSVReader />
+        </div>
       </div>
       <div className="mainpage-button-container">
         <button onClick={approveContract} disabled={isApproving || isApproved}>
@@ -44,7 +60,14 @@ const MainPage = () => {
           {isTransfering ? <Loading /> : 'Transfer'}
         </button>
       </div>
-      <br />
+      {inputValue.NFTAddress !== '' &&
+        multipleTransferationList.length === 0 &&
+        NFTAddressTokenIDsOfOwner.length > 0 &&
+        addrIsContract && (
+          <div className="show-nft">
+            <h3 onClick={fetchNFTData}>Click to Fetch My NFT</h3>
+          </div>
+        )}
       <NFTListSection />
     </div>
   );
