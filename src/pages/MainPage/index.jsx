@@ -18,12 +18,12 @@ const MainPage = () => {
     isApproved,
     fetchNFTData,
     NFTAddressTokenIDsOfOwner,
-    multipleTransferationList,
+    mtList721,
     inputValue,
     ContractValidatePart,
   } = useBatchTool();
 
-  const { addrIsContract } = ContractValidatePart;
+  const { addrIsContract, ERC1155Check } = ContractValidatePart;
 
   return (
     <div className="mainPage">
@@ -38,9 +38,15 @@ const MainPage = () => {
           <br />
           <p>
             You can{' '}
-            <a href="./tokenIDs.csv" download>
-              download csv example here.
-            </a>{' '}
+            {ERC1155Check ? (
+              <a href="./1155Contract-example.csv" download>
+                download csv example here.
+              </a>
+            ) : (
+              <a href="./721Contract-example.csv" download>
+                download csv example here.
+              </a>
+            )}{' '}
             please make sure you recpient address are correct.
           </p>
           <CSVReader />
@@ -61,14 +67,15 @@ const MainPage = () => {
         </button>
       </div>
       {inputValue.NFTAddress !== '' &&
-        multipleTransferationList.length === 0 &&
+        mtList721.length === 0 &&
         NFTAddressTokenIDsOfOwner.length > 0 &&
-        addrIsContract && (
+        addrIsContract &&
+        isApproved && (
           <div className="show-nft">
             <h3 onClick={fetchNFTData}>Click to Fetch My NFT</h3>
+            <NFTListSection />
           </div>
         )}
-      <NFTListSection />
     </div>
   );
 };

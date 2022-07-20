@@ -55,7 +55,7 @@ button {
   font-weight: 700;
   letter-spacing: 1px;
   width: fit-content;
-  margin: auto;
+  margin: auto auto 2rem;
   padding: 0.5rem;
   border: 1px solid #222;
   cursor: pointer;

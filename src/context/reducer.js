@@ -163,7 +163,7 @@ const reducer = (state, action) => {
     return {
       ...state,
       csvTokenIDs: null,
-      multipleTransferationList: [],
+      mtList721: [],
       inputValue: {
         ...state.inputValue,
         RecipientandTokenIDs: '',
@@ -236,12 +236,11 @@ const reducer = (state, action) => {
 
   if (action.type === DECONSTRUCT_CSV) {
     const tokenIDsArray = [];
-    for (let i = 0; i < action.payload.multipleTransferationList.length; i++) {
-      const tokenIDs =
-        action.payload.multipleTransferationList[i]?.TokenIDs.join().split(',');
+    for (let i = 0; i < action.payload.mtList721.length; i++) {
+      const tokenIDs = action.payload.mtList721[i]?.TokenIDs.join().split(',');
       for (let j = 0; j < tokenIDs.length; j++) {
         tokenIDsArray.push([
-          action.payload.multipleTransferationList[i]?.Recipient,
+          action.payload.mtList721[i]?.Recipient,
           tokenIDs[j],
         ]);
       }
@@ -249,7 +248,7 @@ const reducer = (state, action) => {
 
     return {
       ...state,
-      multipleTransferationList: action.payload.multipleTransferationList,
+      mtList721: action.payload.mtList721,
       inputValue: {
         ...state.inputValue,
         RecipientandTokenIDs: [...tokenIDsArray].join('\n'),
@@ -328,17 +327,6 @@ const reducer = (state, action) => {
     for (let i = 0; i < res.length; i++) {
       rtArray.push([res[i][1].recipient, res[i][0]]);
     }
-
-    // Object.entries(state.NFTItemRecipient).forEach(([key, value]) => {
-    //   if (value.checked === true) {
-    //     state.inputValue.RecipientandTokenIDs = [
-    //       state.inputValue.RecipientandTokenIDs,
-    //       [action.payload, key],
-    //     ]
-    //       .join('\n')
-    //       .replace(/^\n/, '');
-    //   }
-    // });
 
     return {
       ...state,

@@ -72,7 +72,7 @@ const initialState = {
   NFTAddressTokenIDsOfOwner: [],
   NFTList: [],
   isConnected: true,
-  multipleTransferationList: [],
+  mtList721: [],
   inputValue: {
     NFTAddress: '',
     RecipientandTokenIDs: '',
@@ -145,29 +145,41 @@ const ToolProvider = ({ children }) => {
 
     async function checkIsApproved() {
       try {
-        const isApproved = await state.ERC721Contract?.isApprovedForAll(
-          state.currentUser,
-          state.BatchTransferContract?.address
-        );
-        dispatch({ type: CHECK_IS_APPROVED, payload: isApproved });
+        if (state.ContractValidatePart.ERC721Check) {
+          const isApproved = await state.ERC721Contract?.isApprovedForAll(
+            state.currentUser,
+            state.BatchTransferContract?.address
+          );
+          dispatch({ type: CHECK_IS_APPROVED, payload: isApproved });
+        } else if (state.ContractValidatePart.ERC1155Check) {
+          const isApproved = await state.ERC1155Contract?.isApprovedForAll(
+            state.currentUser,
+            state.BatchTransferContract?.address
+          );
+          dispatch({ type: CHECK_IS_APPROVED, payload: isApproved });
+        }
       } catch (error) {
         console.error(error);
       }
     }
 
     if (
-      state.inputValue.NFTAddress !== '' &&
-      state.ERC721Contract?.address === state.inputValue.NFTAddress
+      (state.inputValue.NFTAddress !== '' &&
+        state.ERC721Contract?.address === state.inputValue.NFTAddress) ||
+      state.ERC1155Contract?.address === state.inputValue.NFTAddress
     ) {
       checkIsApproved();
     }
   }, [
     state.ERC721Contract,
+    state.ERC1155Contract,
     state.currentUser,
     state.BatchTransferContract,
     state.inputValue.NFTAddress,
     state.isApproved,
     state.isConnected,
+    state.ContractValidatePart.ERC721Check,
+    state.ContractValidatePart.ERC1155Check,
   ]);
 
   useEffect(() => {
@@ -310,7 +322,7 @@ const ToolProvider = ({ children }) => {
   ]);
 
   useEffect(() => {
-    if (state.multipleTransferationList.length > 0) return;
+    if (state.mtList721.length > 0) return;
     if (!state.isUnlocked) return;
     if (!state.ContractValidatePart.addrIsContract) return;
     if (
@@ -359,7 +371,7 @@ const ToolProvider = ({ children }) => {
     state.ERC721Contract,
     state.NFTAddressTokenIDsOfOwner,
     state.inputValue.NFTAddress,
-    state.multipleTransferationList,
+    state.mtList721,
     state.isUnlocked,
     state.ContractValidatePart.addrIsContract,
     state.NFTItemRecipient,
@@ -367,13 +379,13 @@ const ToolProvider = ({ children }) => {
 
   useEffect(() => {
     const deconstructCsv = async () => {
-      const multipleTransferationList = [];
+      const mtList721 = [];
 
       try {
         if (state.csvTokenIDs !== null) {
           for (let i = 1; i < state.csvTokenIDs.length; i++) {
             if (!state.csvTokenIDs[i][0] || !state.csvTokenIDs[i][1]) continue;
-            multipleTransferationList[i - 1] = {
+            mtList721[i - 1] = {
               Recipient: state.csvTokenIDs[i][0],
               TokenIDs: [state.csvTokenIDs[i][1]],
             };
@@ -381,7 +393,7 @@ const ToolProvider = ({ children }) => {
 
           dispatch({
             type: DECONSTRUCT_CSV,
-            payload: { multipleTransferationList },
+            payload: { mtList721 },
           });
         }
       } catch (error) {
@@ -449,6 +461,65 @@ const ToolProvider = ({ children }) => {
     dispatch({ type: GET_NFT_LIST_BEGIN });
   };
 
+  const ERC721ApproveContract = async () => {
+    try {
+      dispatch({
+        type: GET_APPROVE_BEGIN,
+      });
+
+      const tx = await state.ERC721Contract.setApprovalForAll(
+        state.BatchTransferContract.address,
+        true
+      );
+
+      await toast.promise(tx.wait(), {
+        pending: 'Approving...',
+        success: 'Approve successfully',
+        error: 'Approve unsuccessfully',
+      });
+
+      dispatch({
+        type: GET_APPROVE_END,
+      });
+
+      dispatch({ type: CHECK_IS_APPROVED, payload: true });
+    } catch (error) {
+      console.error(error);
+      dispatch({
+        type: GET_APPROVE_END,
+      });
+    }
+  };
+
+  const ERC1155ApproveContract = async () => {
+    try {
+      dispatch({
+        type: GET_APPROVE_BEGIN,
+      });
+      const tx = await state.ERC1155Contract.setApprovalForAll(
+        state.BatchTransferContract.address,
+        true
+      );
+
+      await toast.promise(tx.wait(), {
+        pending: 'Approving...',
+        success: 'Approve successfully',
+        error: 'Approve unsuccessfully',
+      });
+
+      dispatch({
+        type: GET_APPROVE_END,
+      });
+
+      dispatch({ type: CHECK_IS_APPROVED, payload: true });
+    } catch (error) {
+      console.error(error);
+      dispatch({
+        type: GET_APPROVE_END,
+      });
+    }
+  };
+
   const approveContract = async () => {
     if (!state.inputValue.NFTAddress) {
       alert('Please fill in contract address for ERC-721 token contract.');
@@ -467,31 +538,134 @@ const ToolProvider = ({ children }) => {
       return;
     }
 
+    if (
+      state.ERC721Contract &&
+      state.BatchTransferContract &&
+      state.ContractValidatePart.ERC721Check
+    ) {
+      await ERC721ApproveContract();
+    } else if (
+      state.ERC1155Contract &&
+      state.BatchTransferContract &&
+      state.ContractValidatePart.ERC1155Check
+    ) {
+      await ERC1155ApproveContract();
+    }
+  };
+
+  const ERC721transfer = async () => {
     try {
-      dispatch({
-        type: GET_APPROVE_BEGIN,
-      });
-      if (state.ERC721Contract && state.BatchTransferContract) {
-        const tx = await state.ERC721Contract.setApprovalForAll(
-          state.BatchTransferContract.address,
-          true
+      if (state.BatchTransferContract) {
+        dispatch({ type: TRANSFER_BEGIN });
+
+        let recipientList = [];
+        let tokenIDList = [];
+
+        if (state.mtList721.length > 0) {
+          for (let i = 0; i < state.mtList721.length; i++) {
+            const tokenIDs = state.mtList721[i].TokenIDs.join()
+              .replace(' ', '')
+              .split(',')
+              .map(item => parseInt(item));
+            if (tokenIDs.length > 0) {
+              for (let j = 0; j < tokenIDs.length; j++) {
+                recipientList.push(
+                  state.mtList721[i].Recipient.replace(' ', '')
+                );
+                tokenIDList.push(tokenIDs[j]);
+              }
+            } else {
+              recipientList.push([
+                state.mtList721[i].Recipient.replace(' ', ''),
+              ]);
+
+              tokenIDList.push(state.mtList721[i].TokenIDs[0]);
+            }
+          }
+
+          const tx = await state.BatchTransferContract.batchTransfer721(
+            state.inputValue.NFTAddress,
+            recipientList,
+            tokenIDList
+          );
+
+          await toast.promise(tx.wait(), {
+            pending: 'Transfering...',
+            success: 'Transfer successfully',
+            error: 'Transfer unsuccessfully',
+          });
+        } else {
+          state.inputValue.RecipientandTokenIDs?.replace(' ', '')
+            .split('\n')
+            .map(el => el.split(','))
+            .map(el => {
+              recipientList.push(el[0]);
+              tokenIDList.push(parseInt(el[1], 10));
+              return false;
+            });
+
+          const tx = await state.BatchTransferContract.batchTransfer721(
+            state.inputValue.NFTAddress,
+            recipientList,
+            tokenIDList
+          );
+
+          await toast.promise(tx.wait(), {
+            pending: 'Transfering...',
+            success: 'Transfer successfully',
+            error: 'Transfer unsuccessfully',
+          });
+        }
+      }
+      await removeCSVTokenIDs();
+      dispatch({ type: TRANSFER_END });
+    } catch (error) {
+      dispatch({ type: DENY_TRANSFER });
+      console.error(error);
+    }
+  };
+
+  const ERC1155transfer = async () => {
+    try {
+      if (state.BatchTransferContract) {
+        dispatch({ type: TRANSFER_BEGIN });
+
+        let recipientList = [];
+        let tokenIDList = [];
+        let amountList = [];
+
+        state.inputValue.RecipientandTokenIDs?.replace(' ', '')
+          .split('\n')
+          .map(el => el.split(','))
+          .map(el => {
+            recipientList.push(el[0]);
+            tokenIDList.push([parseInt(el[1], 10)]);
+            amountList.push([parseInt(el[2], 10)]);
+            return false;
+          });
+
+        console.log(recipientList);
+        console.log(tokenIDList);
+        console.log(amountList);
+
+        const tx = await state.BatchTransferContract.batchTransfer1155(
+          state.inputValue.NFTAddress,
+          recipientList,
+          tokenIDList,
+          amountList
         );
 
         await toast.promise(tx.wait(), {
-          pending: 'Approving...',
-          success: 'Approve successfully',
-          error: 'Approve unsuccessfully',
+          pending: 'Transfering...',
+          success: 'Transfer successfully',
+          error: 'Transfer unsuccessfully',
         });
       }
-      dispatch({
-        type: GET_APPROVE_END,
-      });
-      dispatch({ type: CHECK_IS_APPROVED, payload: true });
+      await removeCSVTokenIDs();
+      dispatch({ type: TRANSFER_END });
     } catch (error) {
+      dispatch({ type: DENY_TRANSFER });
       console.error(error);
-      dispatch({
-        type: GET_APPROVE_END,
-      });
     }
   };
 
@@ -521,72 +695,12 @@ const ToolProvider = ({ children }) => {
       return;
     }
 
-    try {
-      if (state.BatchTransferContract) {
-        dispatch({ type: TRANSFER_BEGIN });
+    if (state.ContractValidatePart.ERC721Check) {
+      await ERC721transfer();
+    }
 
-        let recipientList = [];
-        let tokenIDList = [];
-
-        if (state.multipleTransferationList.length > 0) {
-          for (let i = 0; i < state.multipleTransferationList.length; i++) {
-            const tokenIDs = state.multipleTransferationList[i].TokenIDs.join()
-              .split(',')
-              .map(item => parseInt(item));
-            if (tokenIDs.length > 0) {
-              for (let j = 0; j < tokenIDs.length; j++) {
-                recipientList.push(
-                  state.multipleTransferationList[i].Recipient
-                );
-                tokenIDList.push(tokenIDs[j]);
-              }
-            } else {
-              recipientList.push([
-                state.multipleTransferationList[i].Recipient,
-              ]);
-
-              tokenIDList.push(state.multipleTransferationList[i].TokenIDs[0]);
-            }
-          }
-
-          const tx = await state.BatchTransferContract.batchTransfer(
-            state.inputValue.NFTAddress,
-            recipientList,
-            tokenIDList
-          );
-
-          await toast.promise(tx.wait(), {
-            pending: 'Transfering...',
-            success: 'Transfer successfully',
-            error: 'Transfer unsuccessfully',
-          });
-        } else {
-          state.inputValue.RecipientandTokenIDs?.split('\n')
-            .map(el => el.split(','))
-            .map(el => {
-              recipientList.push(el[0]);
-              tokenIDList.push(parseInt(el[1], 10));
-              return false;
-            });
-
-          const tx = await state.BatchTransferContract.batchTransfer(
-            state.inputValue.NFTAddress,
-            recipientList,
-            tokenIDList
-          );
-
-          await toast.promise(tx.wait(), {
-            pending: 'Transfering...',
-            success: 'Transfer successfully',
-            error: 'Transfer unsuccessfully',
-          });
-        }
-      }
-      await removeCSVTokenIDs();
-      dispatch({ type: TRANSFER_END });
-    } catch (error) {
-      dispatch({ type: DENY_TRANSFER });
-      console.error(error);
+    if (state.ContractValidatePart.ERC1155Check) {
+      await ERC1155transfer();
     }
   };
 

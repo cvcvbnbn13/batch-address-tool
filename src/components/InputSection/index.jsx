@@ -23,7 +23,7 @@ const InputSection = () => {
         type="text"
         id="NFTAddress"
         name="NFTAddress"
-        minLength={1}
+        minLength={0}
         debounceTimeout={250}
         onChange={handleInput}
         value={inputValue.NFTAddress}
@@ -31,14 +31,22 @@ const InputSection = () => {
       <div className="contract-container">
         <span
           className={
-            ERC721Check && ERC721Check !== null ? 'connect' : 'disconnect'
+            ERC721Check && ERC721Check !== null
+              ? 'connect'
+              : inputValue.NFTAddress === ''
+              ? 'disconnect'
+              : 'disconnect'
           }
         >
           ERC721
         </span>
         <span
           className={
-            ERC1155Check && ERC1155Check !== null ? 'connect' : 'disconnect'
+            ERC1155Check && ERC1155Check !== null
+              ? 'connect'
+              : inputValue.NFTAddress === ''
+              ? 'disconnect'
+              : 'disconnect'
           }
         >
           ERC1155
@@ -50,6 +58,8 @@ const InputSection = () => {
               : (ERC1155Check === false && ERC721Check === false) ||
                 addrIsContract === false
               ? 'error'
+              : inputValue.NFTAddress === ''
+              ? 'disconnect'
               : 'disconnect'
           }
         >
@@ -57,22 +67,49 @@ const InputSection = () => {
         </span>
       </div>
 
-      <label htmlFor="RecipientandTokenIDs">
-        Recipient and Token IDs (one per line, one recipient and one tokenID)
-      </label>
-      <textarea
-        name="RecipientandTokenIDs"
-        id="RecipientandTokenIDs"
-        value={inputValue.RecipientandTokenIDs}
-        onChange={handleInput}
-        rows="5"
-        cols="30"
-        placeholder={`ex: 
-0x356eCAeb6629B7A58154B172C4Ace75456e36CB2, 1212
-0x356eCAeb6629B7A58154B172C4Ace75456e36CB2, 1245
-0x3Dcb476c0501537F8e7B9345335A85756886137D, 453
-        `}
-      />
+      {ERC1155Check && ERC1155Check !== null ? (
+        <>
+          <label htmlFor="RecipientandTokenIDs">
+            Recipient and TokenID and amount (one per line, one recipient ,one
+            tokenID and one amount)
+          </label>
+          <textarea
+            name="RecipientandTokenIDs"
+            id="RecipientandTokenIDs"
+            value={inputValue.RecipientandTokenIDs}
+            onChange={handleInput}
+            rows="10"
+            cols="30"
+            placeholder={`Recipient_address, tokenId, amount
+ex: 
+0x356e.....36CB2,1212,10
+0x356e.....36CB2,1245,20
+0x3Dcb.....6137D,453,30
+          `}
+          />
+        </>
+      ) : (
+        <>
+          <label htmlFor="RecipientandTokenIDs">
+            Recipient and Token IDs (one per line, one recipient and one
+            tokenID)
+          </label>
+          <textarea
+            name="RecipientandTokenIDs"
+            id="RecipientandTokenIDs"
+            value={inputValue.RecipientandTokenIDs}
+            onChange={handleInput}
+            rows="10"
+            cols="30"
+            placeholder={`Recipient_address, tokenId
+ex: 
+0x356e.....36CB2,1212
+0x356e.....36CB2,1245
+0x3Dcb.....6137D,453
+          `}
+          />
+        </>
+      )}
     </div>
   );
 };

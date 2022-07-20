@@ -24,8 +24,6 @@ const NFTListSection = () => {
 
   const [manyItemRecipient, setManyItemRecipient] = useState('');
 
-  console.log(NFTItemRecipient);
-
   const handleChange = e => {
     setManyItemRecipient(e.target.value);
   };
