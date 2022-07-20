@@ -236,24 +236,52 @@ const reducer = (state, action) => {
 
   if (action.type === DECONSTRUCT_CSV) {
     const tokenIDsArray = [];
-    for (let i = 0; i < action.payload.mtList721.length; i++) {
-      const tokenIDs = action.payload.mtList721[i]?.TokenIDs.join().split(',');
-      for (let j = 0; j < tokenIDs.length; j++) {
-        tokenIDsArray.push([
-          action.payload.mtList721[i]?.Recipient,
-          tokenIDs[j],
-        ]);
+    if (
+      state.ContractValidatePart.ERC721Check ||
+      state.ContractValidatePart.ERC721Check === null
+    ) {
+      for (let i = 0; i < action.payload.mtList721.length; i++) {
+        const tokenIDs =
+          action.payload.mtList721[i]?.TokenIDs.join().split(',');
+        for (let j = 0; j < tokenIDs.length; j++) {
+          tokenIDsArray.push([
+            action.payload.mtList721[i]?.Recipient,
+            tokenIDs[j],
+          ]);
+        }
       }
-    }
 
-    return {
-      ...state,
-      mtList721: action.payload.mtList721,
-      inputValue: {
-        ...state.inputValue,
-        RecipientandTokenIDs: [...tokenIDsArray].join('\n'),
-      },
-    };
+      return {
+        ...state,
+        mtList721: action.payload.mtList721,
+        inputValue: {
+          ...state.inputValue,
+          RecipientandTokenIDs: [...tokenIDsArray].join('\n'),
+        },
+      };
+    } else if (state.ContractValidatePart.ERC1155Check) {
+      for (let i = 0; i < action.payload.mtList1155.length; i++) {
+        const tokenIDs =
+          action.payload.mtList1155[i]?.TokenIDs.join().split(',');
+        const amounts = action.payload.mtList1155[i]?.Amounts.join().split(',');
+        for (let j = 0; j < tokenIDs.length; j++) {
+          tokenIDsArray.push([
+            action.payload.mtList1155[i]?.Recipient,
+            tokenIDs[j],
+            amounts[j],
+          ]);
+        }
+      }
+
+      return {
+        ...state,
+        mtList1155: action.payload.mtList1155,
+        inputValue: {
+          ...state.inputValue,
+          RecipientandTokenIDs: [...tokenIDsArray].join('\n'),
+        },
+      };
+    }
   }
 
   if (action.type === CHECK_ISUNLOCKED) {

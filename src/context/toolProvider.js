@@ -73,6 +73,7 @@ const initialState = {
   NFTList: [],
   isConnected: true,
   mtList721: [],
+  mtList1155: [],
   inputValue: {
     NFTAddress: '',
     RecipientandTokenIDs: '',
@@ -381,28 +382,68 @@ const ToolProvider = ({ children }) => {
     const deconstructCsv = async () => {
       const mtList721 = [];
 
-      try {
-        if (state.csvTokenIDs !== null) {
-          for (let i = 1; i < state.csvTokenIDs.length; i++) {
-            if (!state.csvTokenIDs[i][0] || !state.csvTokenIDs[i][1]) continue;
-            mtList721[i - 1] = {
-              Recipient: state.csvTokenIDs[i][0],
-              TokenIDs: [state.csvTokenIDs[i][1]],
-            };
-          }
+      const mtList1155 = [];
 
-          dispatch({
-            type: DECONSTRUCT_CSV,
-            payload: { mtList721 },
-          });
+      if (
+        state.ContractValidatePart.ERC721Check ||
+        state.ContractValidatePart.ERC721Check === null
+      ) {
+        try {
+          if (state.csvTokenIDs !== null) {
+            for (let i = 1; i < state.csvTokenIDs.length; i++) {
+              if (!state.csvTokenIDs[i][0] || !state.csvTokenIDs[i][1])
+                continue;
+              mtList721[i - 1] = {
+                Recipient: state.csvTokenIDs[i][0],
+                TokenIDs: [state.csvTokenIDs[i][1]],
+              };
+            }
+
+            dispatch({
+              type: DECONSTRUCT_CSV,
+              payload: { mtList721 },
+            });
+          }
+        } catch (error) {
+          console.error(error);
         }
-      } catch (error) {
-        console.error(error);
+      } else if (state.ContractValidatePart.ERC1155Check) {
+        try {
+          if (state.csvTokenIDs !== null) {
+            for (let i = 1; i < state.csvTokenIDs.length; i++) {
+              if (
+                !state.csvTokenIDs[i][0] ||
+                !state.csvTokenIDs[i][1] ||
+                !state.csvTokenIDs[i][2]
+              )
+                continue;
+              mtList1155[i - 1] = {
+                Recipient: state.csvTokenIDs[i][0],
+                TokenIDs: [state.csvTokenIDs[i][1]],
+                Amounts: [state.csvTokenIDs[i][2]],
+              };
+            }
+
+            console.log(mtList1155);
+
+            dispatch({
+              type: DECONSTRUCT_CSV,
+              payload: { mtList1155 },
+            });
+          }
+        } catch (error) {
+          console.error(error);
+        }
       }
     };
 
     deconstructCsv();
-  }, [state.csvTokenIDs]);
+  }, [
+    state.csvTokenIDs,
+    state.ContractValidatePart.ERC1155Check,
+    state.ContractValidatePart.ERC1155Check,
+    state.ContractValidatePart,
+  ]);
 
   useEffect(() => {
     const isUnlocked = async () => {
