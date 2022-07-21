@@ -2,6 +2,14 @@ import InputSection from './InputSection';
 import Loading from './Loading';
 import WalletButtonMenu from './WalletButtonMenu';
 import CSVReader from './CSVReader';
-import NFTListSection from './NFTListSection';
+import BulksNFTListSection from './BulksNFTListSection';
+import ExhibitNFTListSection from './ExhibitNFTListSection';
 
-export { InputSection, Loading, WalletButtonMenu, CSVReader, NFTListSection };
+export {
+  InputSection,
+  Loading,
+  WalletButtonMenu,
+  CSVReader,
+  BulksNFTListSection,
+  ExhibitNFTListSection,
+};

@@ -156,6 +156,7 @@ const reducer = (state, action) => {
     return {
       ...state,
       csvTokenIDs: action.payload.csvTokenIDs,
+      isFetchNFTData: false,
     };
   }
 
@@ -164,6 +165,7 @@ const reducer = (state, action) => {
       ...state,
       csvTokenIDs: null,
       mtList721: [],
+      mtList1155: [],
       inputValue: {
         ...state.inputValue,
         RecipientandTokenIDs: '',

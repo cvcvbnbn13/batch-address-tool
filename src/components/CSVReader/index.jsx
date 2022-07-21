@@ -93,8 +93,6 @@ export default function CSVReader() {
 
   const { getCSVTokenIDs, removeCSVTokenIDs, inputValue } = useBatchTool();
 
-  console.log(inputValue);
-
   return (
     <CSVReader
       onUploadAccepted={results => {

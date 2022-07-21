@@ -3,7 +3,7 @@ import { useBatchTool } from '../../context/toolProvider';
 import Loading from '../Loading';
 import './index.css';
 
-const NFTListSection = () => {
+const BulksNFTListSection = () => {
   const {
     NFTList,
     handleBulksChange,
@@ -109,4 +109,4 @@ const NFTListSection = () => {
   );
 };
 
-export default NFTListSection;
+export default BulksNFTListSection;

@@ -90,6 +90,8 @@ const ERC721IID = '0x80ac58cd';
 const ToolProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
+  console.log(state.isFetchNFTData);
+
   useEffect(() => {
     if (!state.isConnected) return;
 
@@ -323,7 +325,6 @@ const ToolProvider = ({ children }) => {
   ]);
 
   useEffect(() => {
-    if (state.mtList721.length > 0) return;
     if (!state.isUnlocked) return;
     if (!state.ContractValidatePart.addrIsContract) return;
     if (

@@ -5,7 +5,8 @@ import {
   Loading,
   WalletButtonMenu,
   CSVReader,
-  NFTListSection,
+  BulksNFTListSection,
+  ExhibitNFTListSection,
 } from '../../components';
 import './index.css';
 
@@ -19,6 +20,7 @@ const MainPage = () => {
     fetchNFTData,
     NFTAddressTokenIDsOfOwner,
     mtList721,
+    mtList1155,
     inputValue,
     ContractValidatePart,
   } = useBatchTool();
@@ -67,13 +69,16 @@ const MainPage = () => {
         </button>
       </div>
       {inputValue.NFTAddress !== '' &&
-        mtList721.length === 0 &&
         NFTAddressTokenIDsOfOwner.length > 0 &&
         addrIsContract &&
         isApproved && (
           <div className="show-nft">
             <h3 onClick={fetchNFTData}>Click to Fetch My NFT</h3>
-            <NFTListSection />
+            {mtList1155.length > 0 || mtList721.length > 0 ? (
+              <ExhibitNFTListSection />
+            ) : (
+              <BulksNFTListSection />
+            )}
           </div>
         )}
     </div>
