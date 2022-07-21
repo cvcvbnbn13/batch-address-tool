@@ -424,8 +424,6 @@ const ToolProvider = ({ children }) => {
               };
             }
 
-            console.log(mtList1155);
-
             dispatch({
               type: DECONSTRUCT_CSV,
               payload: { mtList1155 },
@@ -684,10 +682,6 @@ const ToolProvider = ({ children }) => {
             amountList.push([parseInt(el[2], 10)]);
             return false;
           });
-
-        console.log(recipientList);
-        console.log(tokenIDList);
-        console.log(amountList);
 
         const tx = await state.BatchTransferContract.batchTransfer1155(
           state.inputValue.NFTAddress,

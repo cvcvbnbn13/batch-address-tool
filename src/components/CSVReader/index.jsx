@@ -79,6 +79,9 @@ const styles = {
     top: 10,
     width: 23,
   },
+  fillAddressFirst: {
+    textAlign: 'center',
+  },
 };
 
 export default function CSVReader() {
@@ -88,7 +91,9 @@ export default function CSVReader() {
     DEFAULT_REMOVE_HOVER_COLOR
   );
 
-  const { getCSVTokenIDs, removeCSVTokenIDs } = useBatchTool();
+  const { getCSVTokenIDs, removeCSVTokenIDs, inputValue } = useBatchTool();
+
+  console.log(inputValue);
 
   return (
     <CSVReader
@@ -104,6 +109,7 @@ export default function CSVReader() {
         event.preventDefault();
         setZoneHover(false);
       }}
+      noClick={inputValue.NFTAddress !== '' ? false : true}
     >
       {({
         getRootProps,
@@ -121,43 +127,51 @@ export default function CSVReader() {
               zoneHover && styles.zoneHover
             )}
           >
-            {acceptedFile ? (
-              <>
-                <div style={styles.file}>
-                  <div style={styles.info}>
-                    <span style={styles.size}>
-                      {formatFileSize(acceptedFile.size)}
-                    </span>
-                    <span style={styles.name}>{acceptedFile.name}</span>
+            {' '}
+            {inputValue.NFTAddress !== '' ? (
+              acceptedFile ? (
+                <>
+                  <div style={styles.file}>
+                    <div style={styles.info}>
+                      <span style={styles.size}>
+                        {formatFileSize(acceptedFile.size)}
+                      </span>
+                      <span style={styles.name}>{acceptedFile.name}</span>
+                    </div>
+                    <div
+                      {...getRemoveFileProps()}
+                      style={styles.remove}
+                      onMouseOver={event => {
+                        event.preventDefault();
+                        setRemoveHoverColor(REMOVE_HOVER_COLOR_LIGHT);
+                      }}
+                      onMouseOut={event => {
+                        event.preventDefault();
+                        setRemoveHoverColor(DEFAULT_REMOVE_HOVER_COLOR);
+                      }}
+                    >
+                      <label htmlFor="removeButton" onClick={removeCSVTokenIDs}>
+                        <Remove color={removeHoverColor} />
+                        <input
+                          type="button"
+                          id="removeButton"
+                          className="removeButton"
+                        />
+                      </label>
+                    </div>
+                    <div style={styles.progressBar}>
+                      <ProgressBar />
+                    </div>
                   </div>
-                  <div
-                    {...getRemoveFileProps()}
-                    style={styles.remove}
-                    onMouseOver={event => {
-                      event.preventDefault();
-                      setRemoveHoverColor(REMOVE_HOVER_COLOR_LIGHT);
-                    }}
-                    onMouseOut={event => {
-                      event.preventDefault();
-                      setRemoveHoverColor(DEFAULT_REMOVE_HOVER_COLOR);
-                    }}
-                  >
-                    <label htmlFor="removeButton" onClick={removeCSVTokenIDs}>
-                      <Remove color={removeHoverColor} />
-                      <input
-                        type="button"
-                        id="removeButton"
-                        className="removeButton"
-                      />
-                    </label>
-                  </div>
-                  <div style={styles.progressBar}>
-                    <ProgressBar />
-                  </div>
-                </div>
-              </>
+                </>
+              ) : (
+                <FiUpload size="3rem" />
+              )
             ) : (
-              <FiUpload size="3rem" />
+              <div style={styles.fillAddressFirst}>
+                <FiUpload size="3rem" />
+                <p>Please Fill in NFT Contract Address first</p>
+              </div>
             )}
           </div>
         </>
