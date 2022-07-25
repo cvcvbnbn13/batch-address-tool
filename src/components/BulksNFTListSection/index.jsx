@@ -29,16 +29,22 @@ const BulksNFTListSection = () => {
 
   const [addHeight, setAddHeight] = useState(730);
 
+  const maxHeight =
+    Math.ceil(NFTList.length / 4) * nftItemRef.current?.clientHeight;
+
   const handleShowMore = () => {
-    const maxHeight =
-      Math.ceil(NFTList.length / 4) * nftItemRef.current?.clientHeight;
     if (addHeight === maxHeight) return;
+    if (addHeight < maxHeight && addHeight + 365 === maxHeight) {
+      setAddHeight(state => state + nftItemRef.current?.clientHeight);
+    }
     setAddHeight(state => state + nftItemRef.current?.clientHeight * 2);
   };
 
   const handleChange = e => {
     setManyItemRecipient(e.target.value);
   };
+
+  console.log(maxHeight - addHeight);
 
   return isLoading &&
     !isTransfering &&
@@ -120,7 +126,7 @@ const BulksNFTListSection = () => {
               );
             })}
           </div>
-          {NFTList.length > 8 && (
+          {NFTList.length > 8 && addHeight < maxHeight && (
             <div className="showMore">
               <button onClick={handleShowMore}>Show More</button>
             </div>

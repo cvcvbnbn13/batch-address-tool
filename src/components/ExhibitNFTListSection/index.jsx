@@ -19,13 +19,16 @@ const ExhibitNFTListSection = () => {
 
   // showmore implement
   const nftItemRef = useRef(undefined);
+  const maxHeight =
+    Math.ceil(NFTList.length / 4) * nftItemRef.current?.clientHeight;
 
   const [addHeight, setAddHeight] = useState(730);
 
   const handleShowMore = () => {
-    const maxHeight =
-      Math.ceil(NFTList.length / 4) * nftItemRef.current?.clientHeight;
     if (addHeight === maxHeight) return;
+    if (addHeight < maxHeight && addHeight + 365 === maxHeight) {
+      setAddHeight(state => state + nftItemRef.current?.clientHeight);
+    }
     setAddHeight(state => state + nftItemRef.current?.clientHeight * 2);
   };
 
@@ -66,7 +69,7 @@ const ExhibitNFTListSection = () => {
               );
             })}
           </div>
-          {NFTList.length > 8 && (
+          {NFTList.length > 8 && addHeight < maxHeight && (
             <div className="showMore">
               <button onClick={handleShowMore}>Show More</button>
             </div>

@@ -24,8 +24,6 @@ const MainPage = () => {
     isNFTOfOwnerChecking,
   } = useBatchTool();
 
-  console.log(isNFTOfOwnerChecking);
-
   const { ERC1155Check } = ContractValidatePart;
 
   return (
