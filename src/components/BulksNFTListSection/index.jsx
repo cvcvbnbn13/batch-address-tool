@@ -44,8 +44,6 @@ const BulksNFTListSection = () => {
     setManyItemRecipient(e.target.value);
   };
 
-  console.log(maxHeight - addHeight);
-
   return isLoading &&
     !isTransfering &&
     !isApproving &&
