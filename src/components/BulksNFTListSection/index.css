@@ -71,6 +71,10 @@ input[type='checkbox']:checked:hover + img {
   border: 8px solid #428b8b;
 }
 
+.showMore {
+  margin: 0 auto;
+}
+
 .showMore button {
   padding: 0.25rem 0.5rem;
   border: 1px solid #222;

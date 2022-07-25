@@ -32,9 +32,14 @@
   vertical-align: middle;
 }
 
+.showMore {
+  margin: 0 auto;
+}
+
 .showMore button {
   padding: 0.25rem 0.5rem;
   border: 1px solid #222;
+  margin: 0 auto;
 }
 
 .showMore button:hover {

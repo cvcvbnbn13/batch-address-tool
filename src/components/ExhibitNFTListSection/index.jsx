@@ -68,9 +68,11 @@ const ExhibitNFTListSection = () => {
               );
             })}
           </div>
-          <div className="showMore">
-            <button onClick={handleShowMore}>Show More</button>
-          </div>
+          {NFTList.length > 8 && (
+            <div className="showMore">
+              <button onClick={handleShowMore}>Show More</button>
+            </div>
+          )}
         </div>
       ) : null}
     </section>
