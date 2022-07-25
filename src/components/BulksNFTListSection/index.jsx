@@ -34,8 +34,12 @@ const BulksNFTListSection = () => {
 
   const handleShowMore = () => {
     if (addHeight === maxHeight) return;
-    if (addHeight < maxHeight && addHeight + 365 === maxHeight) {
+    if (
+      addHeight < maxHeight &&
+      addHeight + nftItemRef.current?.clientHeight === maxHeight
+    ) {
       setAddHeight(state => state + nftItemRef.current?.clientHeight);
+      return;
     }
     setAddHeight(state => state + nftItemRef.current?.clientHeight * 2);
   };
@@ -92,7 +96,7 @@ const BulksNFTListSection = () => {
           <div
             className="nft-container"
             style={{
-              height: NFTList.length > 9 && `${addHeight}px`,
+              height: NFTList.length > 8 && `${addHeight + 32}px`,
             }}
           >
             {NFTList.map(item => {
