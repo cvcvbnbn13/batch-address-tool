@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useBatchTool } from '../../context/toolProvider';
 import Loading from '../Loading';
 import './index.css';
@@ -23,6 +23,21 @@ const BulksNFTListSection = () => {
   const { addrIsContract } = ContractValidatePart;
 
   const [manyItemRecipient, setManyItemRecipient] = useState('');
+
+  // showmore implement
+  const nftContainerRef = useRef(undefined);
+  const nftItemRef = useRef(undefined);
+  const itemheight = nftItemRef.current?.clientHeight;
+
+  const [addHeight, setAddHeight] = useState(
+    nftContainerRef.current?.clientHeight
+  );
+
+  const handleShowMore = () => {
+    const maxHeight = Math.ceil(NFTList.length / 4) * itemheight;
+    if (nftContainerRef.current?.clientHeight === maxHeight) return;
+    setAddHeight(nftContainerRef.current?.clientHeight + itemheight * 2);
+  };
 
   const handleChange = e => {
     setManyItemRecipient(e.target.value);
@@ -73,10 +88,14 @@ const BulksNFTListSection = () => {
               </button>
             </div>
           </div>
-          <div className="nft-container">
+          <div
+            className="nft-container"
+            ref={nftContainerRef}
+            style={{ height: `${addHeight}px` }}
+          >
             {NFTList.map(item => {
               return (
-                <div className="nft-item" key={item.name}>
+                <div className="nft-item" key={item.name} ref={nftItemRef}>
                   <label htmlFor={item.name}>
                     <input
                       type="checkbox"
@@ -102,6 +121,9 @@ const BulksNFTListSection = () => {
                 </div>
               );
             })}
+          </div>
+          <div className="showMore">
+            <button onClick={handleShowMore}>Show More</button>
           </div>
         </div>
       ) : null}

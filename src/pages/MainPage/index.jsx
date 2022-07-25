@@ -18,14 +18,12 @@ const MainPage = () => {
     isApproving,
     isApproved,
     fetchNFTData,
-    NFTAddressTokenIDsOfOwner,
     mtList721,
     mtList1155,
-    inputValue,
     ContractValidatePart,
   } = useBatchTool();
 
-  const { addrIsContract, ERC1155Check } = ContractValidatePart;
+  const { ERC1155Check } = ContractValidatePart;
 
   return (
     <div className="mainPage">
@@ -68,19 +66,15 @@ const MainPage = () => {
           {isTransfering ? <Loading /> : 'Transfer'}
         </button>
       </div>
-      {inputValue.NFTAddress !== '' &&
-        NFTAddressTokenIDsOfOwner.length > 0 &&
-        addrIsContract &&
-        isApproved && (
-          <div className="show-nft">
-            <h3 onClick={fetchNFTData}>Click to Fetch My NFT</h3>
-            {mtList1155.length > 0 || mtList721.length > 0 ? (
-              <ExhibitNFTListSection />
-            ) : (
-              <BulksNFTListSection />
-            )}
-          </div>
+
+      <div className="show-nft">
+        <h3 onClick={fetchNFTData}>Click to Fetch My NFT</h3>
+        {mtList1155.length > 0 || mtList721.length > 0 ? (
+          <ExhibitNFTListSection />
+        ) : (
+          <BulksNFTListSection />
         )}
+      </div>
     </div>
   );
 };

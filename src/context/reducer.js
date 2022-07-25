@@ -16,6 +16,7 @@ import {
   REMOVE_CSV_TOKENIDS,
   GET_NFT_ADDRESS_TOKENIDS,
   GET_NFT_LIST_BEGIN,
+  GET_NFT_LIST_ING,
   GET_NFT_LIST_END,
   LIST_BULKS_TOKENIDS,
   REMOVE_BULKS_TOKENIDS,
@@ -188,12 +189,18 @@ const reducer = (state, action) => {
     };
   }
 
+  if (action.type === GET_NFT_LIST_ING) {
+    return {
+      ...state,
+      NFTList: action.payload.nftList,
+      isLoading: false,
+    };
+  }
   if (action.type === GET_NFT_LIST_END) {
     return {
       ...state,
-      isLoading: false,
       isFetchNFTData: false,
-      NFTList: action.payload.nftList,
+      // NFTList: action.payload.nftList,
     };
   }
 

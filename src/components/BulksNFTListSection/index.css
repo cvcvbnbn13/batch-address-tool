@@ -39,7 +39,7 @@
 
 .nft-container {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 2rem;
 }
 
@@ -69,4 +69,14 @@ input[type='checkbox']:checked + img {
 
 input[type='checkbox']:checked:hover + img {
   border: 8px solid #428b8b;
+}
+
+.showMore button {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #222;
+}
+
+.showMore button:hover {
+  background-color: #222;
+  color: #fff;
 }

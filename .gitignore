@@ -6,6 +6,7 @@
 .pnp.js
 .env
 keys.json
+.csv
 
 # testing
 /coverage

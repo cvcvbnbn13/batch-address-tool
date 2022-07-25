@@ -18,6 +18,7 @@ import {
   REMOVE_CSV_TOKENIDS,
   GET_NFT_ADDRESS_TOKENIDS,
   GET_NFT_LIST_BEGIN,
+  GET_NFT_LIST_ING,
   GET_NFT_LIST_END,
   LIST_BULKS_TOKENIDS,
   REMOVE_BULKS_TOKENIDS,
@@ -89,8 +90,6 @@ const ERC721IID = '0x80ac58cd';
 
 const ToolProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
-
-  console.log(state.isFetchNFTData);
 
   useEffect(() => {
     if (!state.isConnected) return;
@@ -337,10 +336,30 @@ const ToolProvider = ({ children }) => {
     const getNFTList = async () => {
       try {
         const nftList = [];
-        for (let i = 0; i < state.NFTAddressTokenIDsOfOwner.length; i++) {
-          const tokenURI = await state.ERC721Contract?.tokenURI(
-            state.NFTAddressTokenIDsOfOwner[i]
-          );
+        // for (let i = 0; i < state.NFTAddressTokenIDsOfOwner.length; i++) {
+        //   const tokenURI = await state.ERC721Contract?.tokenURI(
+        //     state.NFTAddressTokenIDsOfOwner[i]
+        //   );
+        //   const tokenURIFormat = tokenURI.replace('ipfs://', 'ipfs/');
+
+        //   const res = await fetch(`https://cf-ipfs.com/${tokenURIFormat}`);
+
+        //   const { image, name } = await res.json();
+        //   const imageFormat = image.replace('ipfs://', 'ipfs/');
+
+        //   nftList.push({
+        //     tokenID: state.NFTAddressTokenIDsOfOwner[i],
+        //     name,
+        //     image: `https://cf-ipfs.com/${imageFormat}`,
+        //   });
+
+        //   // await dispatch({ type: GET_NFT_LIST_ING, payload: { nftList } });
+
+        //   state.NFTItemRecipient[state.NFTAddressTokenIDsOfOwner[i]] = '';
+        // }
+
+        state.NFTAddressTokenIDsOfOwner.forEach(async el => {
+          const tokenURI = await state.ERC721Contract?.tokenURI(el);
           const tokenURIFormat = tokenURI.replace('ipfs://', 'ipfs/');
 
           const res = await fetch(`https://cf-ipfs.com/${tokenURIFormat}`);
@@ -349,15 +368,17 @@ const ToolProvider = ({ children }) => {
           const imageFormat = image.replace('ipfs://', 'ipfs/');
 
           nftList.push({
-            tokenID: state.NFTAddressTokenIDsOfOwner[i],
+            tokenID: el,
             name,
             image: `https://cf-ipfs.com/${imageFormat}`,
           });
 
-          state.NFTItemRecipient[state.NFTAddressTokenIDsOfOwner[i]] = '';
-        }
+          await dispatch({ type: GET_NFT_LIST_ING, payload: { nftList } });
 
-        dispatch({ type: GET_NFT_LIST_END, payload: { nftList } });
+          state.NFTItemRecipient[el] = '';
+        });
+
+        dispatch({ type: GET_NFT_LIST_END });
       } catch (error) {
         console.error(error);
       }
@@ -365,15 +386,14 @@ const ToolProvider = ({ children }) => {
 
     getNFTList();
 
-    return () => {
-      getNFTList();
-    };
+    // return () => {
+    //   getNFTList();
+    // };
   }, [
     state.isFetchNFTData,
     state.ERC721Contract,
     state.NFTAddressTokenIDsOfOwner,
     state.inputValue.NFTAddress,
-    state.mtList721,
     state.isUnlocked,
     state.ContractValidatePart.addrIsContract,
     state.NFTItemRecipient,
@@ -498,6 +518,28 @@ const ToolProvider = ({ children }) => {
   };
 
   const fetchNFTData = () => {
+    if (
+      !state.ethereum ||
+      state.ethereum?.selectedAddress === null ||
+      !state.isConnected
+    ) {
+      alert('Please connect your wall first');
+      return;
+    }
+
+    if (!state.inputValue.NFTAddress) {
+      alert('Please fill in contract address for token contract.');
+      return;
+    } else if (state.ethereum?.chainId !== '0x4') {
+      alert('Please use the Rinkeby chain');
+      return;
+    }
+
+    if (state.NFTAddressTokenIDsOfOwner.length === 0) {
+      alert("Sorry ,You don't have any NFT");
+      return;
+    }
+
     dispatch({ type: GET_NFT_LIST_BEGIN });
   };
 
@@ -562,7 +604,7 @@ const ToolProvider = ({ children }) => {
 
   const approveContract = async () => {
     if (!state.inputValue.NFTAddress) {
-      alert('Please fill in contract address for ERC-721 token contract.');
+      alert('Please fill in contract address for token contract.');
       return;
     } else if (state.ethereum?.chainId !== '0x4') {
       alert('Please use the Rinkeby chain');
