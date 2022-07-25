@@ -18,18 +18,15 @@ const ExhibitNFTListSection = () => {
   const { addrIsContract } = ContractValidatePart;
 
   // showmore implement
-  const nftContainerRef = useRef(undefined);
   const nftItemRef = useRef(undefined);
-  const itemheight = nftItemRef.current?.clientHeight;
 
-  const [addHeight, setAddHeight] = useState(
-    nftContainerRef.current?.clientHeight
-  );
+  const [addHeight, setAddHeight] = useState(730);
 
   const handleShowMore = () => {
-    const maxHeight = Math.ceil(NFTList.length / 4) * itemheight;
-    if (nftContainerRef.current?.clientHeight === maxHeight) return;
-    setAddHeight(nftContainerRef.current?.clientHeight + itemheight * 2);
+    const maxHeight =
+      Math.ceil(NFTList.length / 4) * nftItemRef.current?.clientHeight;
+    if (addHeight === maxHeight) return;
+    setAddHeight(state => state + nftItemRef.current?.clientHeight * 2);
   };
 
   return isLoading &&
@@ -56,8 +53,9 @@ const ExhibitNFTListSection = () => {
         <div className="nft-list">
           <div
             className="nft-container"
-            ref={nftContainerRef}
-            style={{ height: `${addHeight}px` }}
+            style={{
+              height: NFTList.length > 9 && `${addHeight}px`,
+            }}
           >
             {NFTList.map(item => {
               return (
