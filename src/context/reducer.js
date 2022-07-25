@@ -14,7 +14,8 @@ import {
   LOG_OUT,
   GET_CSV_TOKENIDS,
   REMOVE_CSV_TOKENIDS,
-  GET_NFT_ADDRESS_TOKENIDS,
+  GET_NFT_ADDRESS_TOKENIDS_BEGIN,
+  GET_NFT_ADDRESS_TOKENIDS_END,
   GET_NFT_LIST_BEGIN,
   GET_NFT_LIST_ING,
   GET_NFT_LIST_END,
@@ -174,10 +175,18 @@ const reducer = (state, action) => {
     };
   }
 
-  if (action.type === GET_NFT_ADDRESS_TOKENIDS) {
+  if (action.type === GET_NFT_ADDRESS_TOKENIDS_BEGIN) {
+    return {
+      ...state,
+      isNFTOfOwnerChecking: true,
+    };
+  }
+
+  if (action.type === GET_NFT_ADDRESS_TOKENIDS_END) {
     return {
       ...state,
       NFTAddressTokenIDsOfOwner: action.payload.tokenIDs,
+      isNFTOfOwnerChecking: false,
     };
   }
 

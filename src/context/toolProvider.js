@@ -16,7 +16,8 @@ import {
   LOG_OUT,
   GET_CSV_TOKENIDS,
   REMOVE_CSV_TOKENIDS,
-  GET_NFT_ADDRESS_TOKENIDS,
+  GET_NFT_ADDRESS_TOKENIDS_BEGIN,
+  GET_NFT_ADDRESS_TOKENIDS_END,
   GET_NFT_LIST_BEGIN,
   GET_NFT_LIST_ING,
   GET_NFT_LIST_END,
@@ -80,6 +81,7 @@ const initialState = {
     RecipientandTokenIDs: '',
   },
   NFTItemRecipient: {},
+  isNFTOfOwnerChecking: false,
   isFetchNFTData: false,
 };
 
@@ -291,6 +293,7 @@ const ToolProvider = ({ children }) => {
     const getNFTAddressTokenIDsOfOwner = async () => {
       try {
         if (state.ERC721Contract) {
+          dispatch({ type: GET_NFT_ADDRESS_TOKENIDS_BEGIN });
           const hex = await state.ERC721Contract.balanceOf(state.currentUser);
           const balanceOf = parseInt(hex, 10);
 
@@ -306,7 +309,7 @@ const ToolProvider = ({ children }) => {
           }
 
           dispatch({
-            type: GET_NFT_ADDRESS_TOKENIDS,
+            type: GET_NFT_ADDRESS_TOKENIDS_END,
             payload: { tokenIDs: tokenIDs },
           });
         }
@@ -336,27 +339,6 @@ const ToolProvider = ({ children }) => {
     const getNFTList = async () => {
       try {
         const nftList = [];
-        // for (let i = 0; i < state.NFTAddressTokenIDsOfOwner.length; i++) {
-        //   const tokenURI = await state.ERC721Contract?.tokenURI(
-        //     state.NFTAddressTokenIDsOfOwner[i]
-        //   );
-        //   const tokenURIFormat = tokenURI.replace('ipfs://', 'ipfs/');
-
-        //   const res = await fetch(`https://cf-ipfs.com/${tokenURIFormat}`);
-
-        //   const { image, name } = await res.json();
-        //   const imageFormat = image.replace('ipfs://', 'ipfs/');
-
-        //   nftList.push({
-        //     tokenID: state.NFTAddressTokenIDsOfOwner[i],
-        //     name,
-        //     image: `https://cf-ipfs.com/${imageFormat}`,
-        //   });
-
-        //   // await dispatch({ type: GET_NFT_LIST_ING, payload: { nftList } });
-
-        //   state.NFTItemRecipient[state.NFTAddressTokenIDsOfOwner[i]] = '';
-        // }
 
         state.NFTAddressTokenIDsOfOwner.forEach(async el => {
           const tokenURI = await state.ERC721Contract?.tokenURI(el);

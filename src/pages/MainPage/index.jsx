@@ -21,7 +21,10 @@ const MainPage = () => {
     mtList721,
     mtList1155,
     ContractValidatePart,
+    isNFTOfOwnerChecking,
   } = useBatchTool();
+
+  console.log(isNFTOfOwnerChecking);
 
   const { ERC1155Check } = ContractValidatePart;
 
@@ -68,7 +71,9 @@ const MainPage = () => {
       </div>
 
       <div className="show-nft">
-        <h3 onClick={fetchNFTData}>Click to Fetch My NFT</h3>
+        <h3 onClick={fetchNFTData}>
+          {isNFTOfOwnerChecking ? 'Loading...' : 'Click to Fetch My NFT'}
+        </h3>
         {mtList1155.length > 0 || mtList721.length > 0 ? (
           <ExhibitNFTListSection />
         ) : (
