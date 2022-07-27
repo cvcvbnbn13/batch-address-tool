@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useReducer } from 'react';
 import { toast } from 'react-toastify';
 import reducer from './reducer';
 
+// const contract = sdk.getEdition('{{contract_address}}');
+
 import {
   INIT_BATCH_TOOL,
   HANDLE_INPUT_TOOL,
@@ -41,6 +43,7 @@ import {
   getBatchTransferContract,
   getERC721Contract,
   getERC1155Contract,
+  getERC1155EnumerableContract,
 } from '../utils';
 
 const provider = ethers.getDefaultProvider('rinkeby', {
@@ -58,6 +61,7 @@ const initialState = {
   BatchTransferContract: null,
   ERC721Contract: null,
   ERC1155Contract: null,
+  ERC1155EnumerableContract: null,
   isLoading: false,
   isApproved: null,
   isTransfering: false,
@@ -99,14 +103,22 @@ const ToolProvider = ({ children }) => {
     async function initTool() {
       try {
         await web3Provider.send('eth_requestAccounts', []);
+
         const signer = web3Provider.getSigner();
 
         const contract = await getBatchTransferContract(provider);
+
         const ERC721Contract = await getERC721Contract(
           state.inputValue.NFTAddress,
           provider
         );
+
         const ERC1155Contract = await getERC1155Contract(
+          state.inputValue.NFTAddress,
+          provider
+        );
+
+        const ERC1155EnumerableContract = await getERC1155EnumerableContract(
           state.inputValue.NFTAddress,
           provider
         );
@@ -114,6 +126,8 @@ const ToolProvider = ({ children }) => {
         const signedContract = contract.connect(signer);
         const signedERC721Contract = ERC721Contract.connect(signer);
         const signedERC1155Contract = ERC1155Contract.connect(signer);
+        const signedERC1155EnumContract =
+          ERC1155EnumerableContract.connect(signer);
 
         dispatch({
           type: INIT_BATCH_TOOL,
@@ -121,6 +135,7 @@ const ToolProvider = ({ children }) => {
             signedContract,
             signedERC721Contract,
             signedERC1155Contract,
+            signedERC1155EnumContract,
           },
         });
       } catch (error) {
@@ -284,46 +299,66 @@ const ToolProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    if (
-      state.inputValue.NFTAddress === '' ||
-      state.inputValue.NFTAddress !== state.ERC721Contract?.address
-    )
-      return;
-
-    const getNFTAddressTokenIDsOfOwner = async () => {
+    const getERC721TokenIDsOfOwner = async () => {
+      if (
+        state.inputValue.NFTAddress === '' ||
+        state.inputValue.NFTAddress !== state.ERC721Contract?.address ||
+        !state.ContractValidatePart.ERC721Check
+      )
+        return;
       try {
-        if (state.ERC721Contract) {
-          dispatch({ type: GET_NFT_ADDRESS_TOKENIDS_BEGIN });
-          const hex = await state.ERC721Contract.balanceOf(state.currentUser);
-          const balanceOf = parseInt(hex, 10);
+        dispatch({ type: GET_NFT_ADDRESS_TOKENIDS_BEGIN });
+        const hex = await state.ERC721Contract.balanceOf(state.currentUser);
+        const balanceOf = parseInt(hex, 10);
 
-          const tokenIDs = [];
-          for (let i = 0; i < balanceOf; i++) {
-            const hex = await state.ERC721Contract.tokenOfOwnerByIndex(
-              state.currentUser,
-              i
-            );
+        const tokenIDs = [];
+        for (let i = 0; i < balanceOf; i++) {
+          const hex = await state.ERC721Contract.tokenOfOwnerByIndex(
+            state.currentUser,
+            i
+          );
 
-            const tokenID = parseInt(hex, 10);
-            tokenIDs.push(tokenID);
-          }
-
-          dispatch({
-            type: GET_NFT_ADDRESS_TOKENIDS_END,
-            payload: { tokenIDs: tokenIDs },
-          });
+          const tokenID = parseInt(hex, 10);
+          tokenIDs.push(tokenID);
         }
+
+        dispatch({
+          type: GET_NFT_ADDRESS_TOKENIDS_END,
+          payload: { tokenIDs: tokenIDs },
+        });
       } catch (error) {
         console.log(error);
       }
     };
 
-    getNFTAddressTokenIDsOfOwner();
+    // const getERC1155TokenIDsOfOwner = async () => {
+    //   if (
+    //     state.inputValue.NFTAddress === '' ||
+    //     state.ERC1155EnumerableContract?.address !==
+    //       state.inputValue.NFTAddress ||
+    //     !state.ContractValidatePart.ERC1155Check
+    //   )
+    //     return;
+    //   try {
+    //     dispatch({ type: GET_NFT_ADDRESS_TOKENIDS_BEGIN });
+    //     const x = await state.ERC1155Contract.balanceOf(state.currentUser, 0);
+    //     console.log(x);
+    //   } catch (error) {
+    //     console.error(error);
+    //   }
+    // };
+
+    getERC721TokenIDsOfOwner();
+    // getERC1155TokenIDsOfOwner();
   }, [
     state.inputValue.NFTAddress,
     state.ERC721Contract?.address,
     state.currentUser,
     state.ERC721Contract,
+    state.ContractValidatePart.ERC721Check,
+    state.ContractValidatePart.ERC1155Check,
+    state.ERC1155EnumerableContract,
+    state.ERC1155Contract,
   ]);
 
   useEffect(() => {

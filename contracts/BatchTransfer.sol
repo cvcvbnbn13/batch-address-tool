@@ -3,6 +3,7 @@ pragma solidity ^0.8.14;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
+import "@solidstate/contracts/token/ERC1155/enumerable/ERC1155Enumerable.sol";
 
 interface ERC721Partial {
     function transferFrom(address from, address to, uint256 tokenId) external;
