@@ -288,8 +288,6 @@ const ToolProvider = ({ children }) => {
     }
   };
 
-  console.log(state.ERC1155Contract);
-
   useEffect(() => {
     const getERC721TokenIDsOfOwner = async () => {
       if (

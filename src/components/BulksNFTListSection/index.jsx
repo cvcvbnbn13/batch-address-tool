@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useBatchTool } from '../../context/toolProvider';
 import Loading from '../Loading';
 import './index.css';
@@ -27,7 +27,14 @@ const BulksNFTListSection = () => {
   // showmore implement
   const nftItemRef = useRef(undefined);
 
-  const [addHeight, setAddHeight] = useState(730);
+  const [addHeight, setAddHeight] = useState(0);
+
+  useEffect(() => {
+    if (typeof nftItemRef.current?.clientHeight === 'number') {
+      if (addHeight > nftItemRef.current?.clientHeight * 2) return;
+      setAddHeight(nftItemRef.current?.clientHeight * 2);
+    }
+  }, [nftItemRef.current?.clientHeight, addHeight]);
 
   const maxHeight =
     Math.ceil(NFTList.length / 4) * nftItemRef.current?.clientHeight;
@@ -46,6 +53,12 @@ const BulksNFTListSection = () => {
 
   const handleChange = e => {
     setManyItemRecipient(e.target.value);
+  };
+
+  const handleNoFindImage = e => {
+    e.target.src =
+      'https://s2.coinmarketcap.com/static/img/coins/200x200/17623.png';
+    e.target.onError = null;
   };
 
   return isLoading &&
@@ -113,7 +126,11 @@ const BulksNFTListSection = () => {
                         NFTItemRecipient[`${item.tokenID}`]?.checked || ''
                       }
                     />
-                    <img src={item.image} alt={item.name} />
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      onError={handleNoFindImage}
+                    />
                   </label>
                   <p>{`${item.tokenID} | ${item.name}`}</p>
                   <input
