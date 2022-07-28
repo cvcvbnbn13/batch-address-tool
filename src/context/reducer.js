@@ -43,7 +43,6 @@ const reducer = (state, action) => {
       BatchTransferContract: action.payload.signedContract,
       ERC721Contract: action.payload.signedERC721Contract,
       ERC1155Contract: action.payload.signedERC1155Contract,
-      ERC1155EnumerableContract: action.payload.signedERC1155EnumContract,
     };
   }
 

@@ -54,6 +54,7 @@
 .nft-item {
   display: flex;
   flex-direction: column;
+  justify-self: center;
 }
 
 .nft-item .checkbox {

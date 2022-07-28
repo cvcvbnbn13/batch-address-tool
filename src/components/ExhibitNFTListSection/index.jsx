@@ -28,9 +28,9 @@ const ExhibitNFTListSection = () => {
     if (addHeight === maxHeight) return;
     if (
       addHeight < maxHeight &&
-      addHeight + nftItemRef.current?.clientHeight === maxHeight
+      addHeight + nftItemRef.current?.clientHeight >= maxHeight
     ) {
-      setAddHeight(state => state + nftItemRef.current?.clientHeight);
+      setAddHeight(maxHeight);
       return;
     }
     setAddHeight(state => state + nftItemRef.current?.clientHeight * 2);
@@ -61,7 +61,7 @@ const ExhibitNFTListSection = () => {
           <div
             className="nft-container"
             style={{
-              height: NFTList.length > 8 && `${addHeight + 32}px`,
+              height: NFTList.length > 8 && `${addHeight + 48}px`,
             }}
           >
             {NFTList.map(item => {

@@ -43,7 +43,6 @@ import {
   getBatchTransferContract,
   getERC721Contract,
   getERC1155Contract,
-  getERC1155EnumerableContract,
 } from '../utils';
 
 const provider = ethers.getDefaultProvider('rinkeby', {
@@ -61,7 +60,6 @@ const initialState = {
   BatchTransferContract: null,
   ERC721Contract: null,
   ERC1155Contract: null,
-  ERC1155EnumerableContract: null,
   isLoading: false,
   isApproved: null,
   isTransfering: false,
@@ -118,16 +116,9 @@ const ToolProvider = ({ children }) => {
           provider
         );
 
-        const ERC1155EnumerableContract = await getERC1155EnumerableContract(
-          state.inputValue.NFTAddress,
-          provider
-        );
-
         const signedContract = contract.connect(signer);
         const signedERC721Contract = ERC721Contract.connect(signer);
         const signedERC1155Contract = ERC1155Contract.connect(signer);
-        const signedERC1155EnumContract =
-          ERC1155EnumerableContract.connect(signer);
 
         dispatch({
           type: INIT_BATCH_TOOL,
@@ -135,7 +126,6 @@ const ToolProvider = ({ children }) => {
             signedContract,
             signedERC721Contract,
             signedERC1155Contract,
-            signedERC1155EnumContract,
           },
         });
       } catch (error) {
@@ -298,6 +288,8 @@ const ToolProvider = ({ children }) => {
     }
   };
 
+  console.log(state.ERC1155Contract);
+
   useEffect(() => {
     const getERC721TokenIDsOfOwner = async () => {
       if (
@@ -334,14 +326,15 @@ const ToolProvider = ({ children }) => {
     // const getERC1155TokenIDsOfOwner = async () => {
     //   if (
     //     state.inputValue.NFTAddress === '' ||
-    //     state.ERC1155EnumerableContract?.address !==
-    //       state.inputValue.NFTAddress ||
+    //     state.ERC1155Contract?.address !== state.inputValue.NFTAddress ||
     //     !state.ContractValidatePart.ERC1155Check
     //   )
     //     return;
     //   try {
     //     dispatch({ type: GET_NFT_ADDRESS_TOKENIDS_BEGIN });
-    //     const x = await state.ERC1155Contract.balanceOf(state.currentUser, 0);
+    //     const x = await state.ERC1155Contract?.tokensByAccount(
+    //       state.currentUser
+    //     );
     //     console.log(x);
     //   } catch (error) {
     //     console.error(error);
@@ -357,7 +350,6 @@ const ToolProvider = ({ children }) => {
     state.ERC721Contract,
     state.ContractValidatePart.ERC721Check,
     state.ContractValidatePart.ERC1155Check,
-    state.ERC1155EnumerableContract,
     state.ERC1155Contract,
   ]);
 
@@ -377,18 +369,33 @@ const ToolProvider = ({ children }) => {
 
         state.NFTAddressTokenIDsOfOwner.forEach(async el => {
           const tokenURI = await state.ERC721Contract?.tokenURI(el);
-          const tokenURIFormat = tokenURI.replace('ipfs://', 'ipfs/');
+          let regStr = new RegExp('^http', 'g');
+          if (regStr.test(tokenURI)) {
+            const res = await fetch(tokenURI);
 
-          const res = await fetch(`https://cf-ipfs.com/${tokenURIFormat}`);
+            const { image, name } = await res.json();
 
-          const { image, name } = await res.json();
-          const imageFormat = image.replace('ipfs://', 'ipfs/');
+            const imageFormat = image.replace('ipfs://', 'ipfs/');
 
-          nftList.push({
-            tokenID: el,
-            name,
-            image: `https://cf-ipfs.com/${imageFormat}`,
-          });
+            nftList.push({
+              tokenID: el,
+              name,
+              image: `${imageFormat}`,
+            });
+          } else {
+            const tokenURIFormat = tokenURI.replace('ipfs://', 'ipfs/');
+
+            const res = await fetch(`https://cf-ipfs.com/${tokenURIFormat}`);
+
+            const { image, name } = await res.json();
+            const imageFormat = image.replace('ipfs://', 'ipfs/');
+
+            nftList.push({
+              tokenID: el,
+              name,
+              image: `https://cf-ipfs.com/${imageFormat}`,
+            });
+          }
 
           await dispatch({ type: GET_NFT_LIST_ING, payload: { nftList } });
 
