@@ -1,13 +1,31 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useBatchTool } from '../../context/toolProvider';
 import './index.css';
 import { DebounceInput } from 'react-debounce-input';
 
 const InputSection = () => {
-  const { inputValue, handleInput, ethereum, ContractValidatePart } =
-    useBatchTool();
+  const {
+    inputValue,
+    handleInput,
+    ethereum,
+    ContractValidatePart,
+    ERC1155Contract,
+  } = useBatchTool();
 
   const { ERC721Check, ERC1155Check, addrIsContract } = ContractValidatePart;
+
+  // useEffect(() => {
+  //   const x = async () => {
+  //     try {
+  //       const res = await ERC1155Contract.accountsByToken(0);
+  //       console.log(res);
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   };
+
+  //   x();
+  // }, [ERC1155Contract]);
 
   return (
     <div className="input-section">

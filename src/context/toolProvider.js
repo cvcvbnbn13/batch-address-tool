@@ -2,8 +2,6 @@ import { createContext, useContext, useEffect, useReducer } from 'react';
 import { toast } from 'react-toastify';
 import reducer from './reducer';
 
-// const contract = sdk.getEdition('{{contract_address}}');
-
 import {
   INIT_BATCH_TOOL,
   HANDLE_INPUT_TOOL,
@@ -51,6 +49,8 @@ const provider = ethers.getDefaultProvider('rinkeby', {
     projectSecret: process.env.INFURA_PROJECT_SECRET,
   },
 });
+
+const etherscanProvider = new ethers.providers.EtherscanProvider('rinkeby');
 
 const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
 
@@ -137,6 +137,7 @@ const ToolProvider = ({ children }) => {
     state.inputValue.NFTAddress,
     state.ethereum?.selectedAddress,
     state.isConnected,
+    state.currentUser,
   ]);
 
   useEffect(() => {
@@ -167,6 +168,14 @@ const ToolProvider = ({ children }) => {
           );
           dispatch({ type: CHECK_IS_APPROVED, payload: isApproved });
         }
+
+        const ggyy = await etherscanProvider.getHistory(
+          '0x356eCAeb6629B7A58154B172C4Ace75456e36CB2'
+        );
+
+        const data = ggyy.filter(el => el.data.slice(0, 10) === '0x42966c68');
+
+        console.log(data);
       } catch (error) {
         console.error(error);
       }

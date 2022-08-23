@@ -4,13 +4,11 @@
 }
 
 input,
-select,
 textarea {
   margin: 0.2rem 0 2rem;
 }
 
-input,
-select {
+input {
   width: calc(100% - 12px);
   display: block;
   padding: 0.5rem 0.25rem;
@@ -41,7 +39,6 @@ span.disconnect {
   border: 1px solid transparent;
   padding: 0.25rem 0.5rem;
   border-radius: 2rem;
-  color: #fff;
   font-weight: 700;
   border: 1px solid #aaa;
   color: #000;
